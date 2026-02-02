@@ -1,0 +1,2412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IntNetAdmin - Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        :root {
+            --bg: #0f172a;
+            --bg-secondary: #020617;
+            --card: #1e293b;
+            --border: #334155;
+            --text: #f1f5f9;
+            --muted: #94a3b8;
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --info: #06b6d4;
+        }
+        
+        :root.light {
+            --bg: #f8fafc;
+            --bg-secondary: #e2e8f0;
+            --card: #ffffff;
+            --border: #cbd5e1;
+            --text: #1e293b;
+            --muted: #64748b;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.5;
+        }
+        
+        /* Header */
+        header {
+            background: var(--card);
+            border-bottom: 1px solid var(--border);
+            padding: 0.75rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .logo svg { width: 40px; height: 40px; }
+        .logo-text h1 { font-size: 1.25rem; font-weight: 700; line-height: 1.2; }
+        .logo-text .slogan { font-size: 0.7rem; color: var(--muted); font-weight: 400; }
+        
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .scan-info {
+            font-size: 0.75rem;
+            color: var(--muted);
+            text-align: right;
+        }
+        .scan-info .label { opacity: 0.7; }
+        .scan-info .value { font-weight: 600; color: var(--text); }
+        
+        .lang-switch {
+            display: flex;
+            gap: 0.25rem;
+        }
+        .lang-btn {
+            background: none;
+            border: 2px solid transparent;
+            font-size: 1.25rem;
+            cursor: pointer;
+            padding: 0.25rem;
+            border-radius: 4px;
+            opacity: 0.5;
+            transition: all 0.2s;
+        }
+        .lang-btn.active, .lang-btn:hover { opacity: 1; border-color: var(--primary); }
+        
+        .theme-toggle {
+            background: var(--border);
+            border: none;
+            font-size: 1.25rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+        .theme-toggle:hover { background: var(--primary); }
+        
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .user-info {
+            text-align: right;
+            font-size: 0.8rem;
+        }
+        .user-info .username { font-weight: 600; }
+        .user-info .sudo-badge {
+            font-size: 0.65rem;
+            background: var(--success);
+            color: white;
+            padding: 0.125rem 0.375rem;
+            border-radius: 4px;
+            margin-left: 0.25rem;
+        }
+        .logout-btn {
+            background: var(--border);
+            border: none;
+            color: var(--text);
+            padding: 0.5rem 0.875rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.2s;
+        }
+        .logout-btn:hover { background: var(--error); }
+        
+        /* Navigation */
+        .tabs {
+            display: flex;
+            gap: 0.25rem;
+            padding: 0.75rem 1.5rem;
+            background: var(--card);
+            border-bottom: 1px solid var(--border);
+            overflow-x: auto;
+        }
+        .tab {
+            padding: 0.625rem 1rem;
+            border-radius: 8px;
+            background: transparent;
+            border: none;
+            color: var(--muted);
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .tab:hover { background: var(--border); color: var(--text); }
+        .tab.active { background: var(--primary); color: white; }
+        
+        /* Main Content */
+        main {
+            padding: 1.5rem;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+        
+        .view { display: none; }
+        .view.active { display: block; }
+        
+        /* Cards */
+        .card {
+            background: var(--card);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            margin-bottom: 1.5rem;
+        }
+        .card-header {
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+        .card-header h2 {
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .card-body { padding: 1.25rem; }
+        .card-body.no-padding { padding: 0; }
+        
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .stat-card {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 1.25rem;
+            border: 1px solid var(--border);
+            position: relative;
+            overflow: hidden;
+        }
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+        }
+        .stat-card.green::before { background: var(--success); }
+        .stat-card.blue::before { background: var(--primary); }
+        .stat-card.yellow::before { background: var(--warning); }
+        .stat-card.red::before { background: var(--error); }
+        .stat-card.cyan::before { background: var(--info); }
+        .stat-label { color: var(--muted); font-size: 0.8rem; margin-bottom: 0.375rem; }
+        .stat-value { font-size: 1.75rem; font-weight: 700; }
+        .stat-value.online { color: var(--success); }
+        .stat-value.offline { color: var(--error); }
+        
+        /* Charts */
+        .chart-container {
+            position: relative;
+            height: 250px;
+            width: 100%;
+        }
+        .chart-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        /* Tables */
+        .table-container { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td {
+            padding: 0.75rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+        th {
+            background: var(--bg-secondary);
+            color: var(--muted);
+            font-weight: 600;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            position: sticky;
+            top: 0;
+        }
+        tr:hover { background: rgba(59, 130, 246, 0.05); }
+        
+        /* Status indicators */
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 0.5rem;
+        }
+        .status-dot.online { background: var(--success); box-shadow: 0 0 8px var(--success); }
+        .status-dot.offline { background: var(--error); }
+        .status-dot.unknown { background: var(--muted); }
+        
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0.625rem;
+            border-radius: 9999px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        .badge.online { background: rgba(34, 197, 94, 0.2); color: var(--success); }
+        .badge.offline { background: rgba(239, 68, 68, 0.2); color: var(--error); }
+        .badge.unknown { background: rgba(148, 163, 184, 0.2); color: var(--muted); }
+        .badge.running { background: rgba(34, 197, 94, 0.2); color: var(--success); }
+        .badge.stopped { background: rgba(239, 68, 68, 0.2); color: var(--error); }
+        .badge.static { background: rgba(59, 130, 246, 0.2); color: var(--primary); }
+        .badge.dynamic { background: rgba(249, 115, 22, 0.2); color: var(--warning); }
+        
+        /* Buttons */
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            border: none;
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            transition: all 0.2s;
+        }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-hover); }
+        .btn-secondary { background: var(--border); color: var(--text); }
+        .btn-secondary:hover { background: #475569; }
+        .btn-success { background: var(--success); color: white; }
+        .btn-danger { background: var(--error); color: white; }
+        .btn-sm { padding: 0.375rem 0.75rem; font-size: 0.75rem; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        
+        .btn-group { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        
+        /* Forms */
+        .form-group { margin-bottom: 1rem; }
+        .form-group label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 500;
+            margin-bottom: 0.375rem;
+            color: var(--muted);
+        }
+        .form-input, .form-select {
+            width: 100%;
+            padding: 0.625rem 0.875rem;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: var(--bg);
+            color: var(--text);
+            font-size: 0.875rem;
+            transition: border-color 0.2s;
+        }
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        .form-input::placeholder { color: var(--muted); }
+        .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; }
+        .form-hint { font-size: 0.7rem; color: var(--muted); margin-top: 0.25rem; }
+        
+        /* Search */
+        .search-box {
+            display: flex;
+            gap: 0.5rem;
+            width: 100%;
+            max-width: 300px;
+        }
+        .search-input {
+            flex: 1;
+            padding: 0.5rem 0.875rem;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: var(--bg);
+            color: var(--text);
+            font-size: 0.85rem;
+        }
+        .search-input:focus { outline: none; border-color: var(--primary); }
+        
+        /* IP Grid */
+        .ip-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+            gap: 0.375rem;
+        }
+        .ip-cell {
+            padding: 0.375rem;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 0.7rem;
+            font-family: 'SF Mono', Monaco, monospace;
+            border: 1px solid var(--border);
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .ip-cell.online { background: rgba(34, 197, 94, 0.2); border-color: var(--success); }
+        .ip-cell.offline { background: var(--card); opacity: 0.6; }
+        .ip-cell:hover { transform: scale(1.05); z-index: 1; }
+        .ip-cell .ip { font-weight: 600; }
+        .ip-cell .hostname { font-size: 0.6rem; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        
+        /* Host type filters */
+        .filter-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        .filter-tab {
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: var(--muted);
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .filter-tab.active { background: var(--primary); border-color: var(--primary); color: white; }
+        .filter-tab:hover:not(.active) { border-color: var(--primary); }
+        
+        /* Record types */
+        .record-type {
+            display: inline-block;
+            padding: 0.125rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            font-family: monospace;
+        }
+        .record-type.A { background: #3b82f6; color: white; }
+        .record-type.AAAA { background: #8b5cf6; color: white; }
+        .record-type.CNAME { background: #f59e0b; color: black; }
+        .record-type.PTR { background: #10b981; color: white; }
+        .record-type.MX { background: #ec4899; color: white; }
+        .record-type.TXT { background: #6b7280; color: white; }
+        .record-type.NS { background: #06b6d4; color: white; }
+        
+        /* Zone tabs */
+        .zone-tabs { display: flex; gap: 0.375rem; margin-bottom: 1rem; flex-wrap: wrap; }
+        .zone-tab {
+            padding: 0.375rem 0.75rem;
+            border-radius: 6px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: var(--muted);
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.2s;
+        }
+        .zone-tab.active { background: var(--primary); border-color: var(--primary); color: white; }
+        
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.75);
+            z-index: 200;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal {
+            background: var(--card);
+            border-radius: 16px;
+            width: 100%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: modalIn 0.2s ease;
+        }
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.95) translateY(-10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .modal-header {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .modal-header h2 { font-size: 1.125rem; }
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--muted);
+            font-size: 1.5rem;
+            cursor: pointer;
+            line-height: 1;
+        }
+        .modal-close:hover { color: var(--text); }
+        .modal-body { padding: 1.5rem; }
+        .modal-footer {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.75rem;
+        }
+        
+        /* Settings */
+        .setting-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background: var(--bg);
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+        }
+        .setting-label { font-weight: 500; font-size: 0.9rem; }
+        .setting-desc { font-size: 0.8rem; color: var(--muted); margin-top: 0.125rem; }
+        .setting-input {
+            padding: 0.5rem 0.75rem;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: var(--card);
+            color: var(--text);
+            width: 120px;
+            text-align: right;
+            font-size: 0.875rem;
+        }
+        
+        /* Toggle */
+        .toggle {
+            width: 44px;
+            height: 24px;
+            background: var(--border);
+            border-radius: 12px;
+            position: relative;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .toggle.active { background: var(--primary); }
+        .toggle::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: left 0.2s;
+        }
+        .toggle.active::after { left: 22px; }
+        
+        /* Loading & spinner */
+        .loading { display: flex; align-items: center; justify-content: center; padding: 2rem; color: var(--muted); }
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-right: 0.5rem;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
+        /* Toast notifications */
+        .toast-container {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            z-index: 300;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .toast {
+            background: var(--card);
+            border: 1px solid var(--border);
+            padding: 0.875rem 1.25rem;
+            border-radius: 8px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            animation: toastIn 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .toast.success { border-left: 3px solid var(--success); }
+        .toast.error { border-left: 3px solid var(--error); }
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateX(100%); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            header { padding: 0.5rem 1rem; }
+            .logo-text .slogan { display: none; }
+            .scan-info { display: none; }
+            .tabs { padding: 0.5rem 1rem; }
+            main { padding: 1rem; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .chart-grid { grid-template-columns: 1fr; }
+            th, td { padding: 0.5rem 0.75rem; font-size: 0.75rem; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#3b82f6"/>
+                        <stop offset="100%" style="stop-color:#8b5cf6"/>
+                    </linearGradient>
+                </defs>
+                <circle cx="50" cy="50" r="45" fill="url(#grad1)" opacity="0.2"/>
+                <circle cx="50" cy="50" r="8" fill="url(#grad1)"/>
+                <circle cx="50" cy="20" r="6" fill="url(#grad1)"/>
+                <circle cx="80" cy="50" r="6" fill="url(#grad1)"/>
+                <circle cx="50" cy="80" r="6" fill="url(#grad1)"/>
+                <circle cx="20" cy="50" r="6" fill="url(#grad1)"/>
+                <circle cx="75" cy="25" r="5" fill="url(#grad1)" opacity="0.7"/>
+                <circle cx="75" cy="75" r="5" fill="url(#grad1)" opacity="0.7"/>
+                <circle cx="25" cy="75" r="5" fill="url(#grad1)" opacity="0.7"/>
+                <circle cx="25" cy="25" r="5" fill="url(#grad1)" opacity="0.7"/>
+                <line x1="50" y1="50" x2="50" y2="20" stroke="url(#grad1)" stroke-width="2"/>
+                <line x1="50" y1="50" x2="80" y2="50" stroke="url(#grad1)" stroke-width="2"/>
+                <line x1="50" y1="50" x2="50" y2="80" stroke="url(#grad1)" stroke-width="2"/>
+                <line x1="50" y1="50" x2="20" y2="50" stroke="url(#grad1)" stroke-width="2"/>
+                <line x1="50" y1="50" x2="75" y2="25" stroke="url(#grad1)" stroke-width="1.5" opacity="0.7"/>
+                <line x1="50" y1="50" x2="75" y2="75" stroke="url(#grad1)" stroke-width="1.5" opacity="0.7"/>
+                <line x1="50" y1="50" x2="25" y2="75" stroke="url(#grad1)" stroke-width="1.5" opacity="0.7"/>
+                <line x1="50" y1="50" x2="25" y2="25" stroke="url(#grad1)" stroke-width="1.5" opacity="0.7"/>
+            </svg>
+            <div class="logo-text">
+                <h1>IntNetAdmin</h1>
+                <div class="slogan" data-i18n="slogan">Manage your internal network with ease</div>
+            </div>
+        </div>
+        <div class="header-actions">
+            <button class="btn btn-warning" id="activate-changes-btn" style="display:none; background: var(--warning); margin-right: 1rem;">
+                ⚡ <span data-i18n="activate_changes">Activate Changes</span> (<span id="pending-count">0</span>)
+            </button>
+            <div class="scan-info">
+                <div><span class="label" data-i18n="last_scan">Last scan:</span> <span class="value" id="header-last-scan">-</span></div>
+                <div><span class="label" data-i18n="next_scan">Next scan:</span> <span class="value" id="header-next-scan">-</span></div>
+            </div>
+            <div class="lang-switch">
+                <button class="lang-btn active" data-lang="en" title="English">🇬🇧</button>
+                <button class="lang-btn" data-lang="sv" title="Svenska">🇸🇪</button>
+            </div>
+            <button class="theme-toggle" id="theme-toggle" title="Toggle theme">🌙</button>
+            <div class="user-menu">
+                <div class="user-info">
+                    <span class="username" id="username">user</span>
+                    <span class="sudo-badge" id="sudo-badge" style="display:none;">SUDO</span>
+                </div>
+                <a href="/logout" class="logout-btn" data-i18n="logout">Logout</a>
+            </div>
+        </div>
+    </header>
+    
+    <nav class="tabs">
+        <button class="tab active" data-view="dashboard">📊 <span data-i18n="dashboard">Dashboard</span></button>
+        <button class="tab" data-view="dhcp">🔗 <span data-i18n="dhcp">DHCP</span></button>
+        <button class="tab" data-view="dns">📍 <span data-i18n="dns">DNS</span></button>
+        <button class="tab" data-view="scanner">📡 <span data-i18n="scanner">IP Scanner</span></button>
+        <button class="tab" data-view="leases">📋 <span data-i18n="leases">Leases</span></button>
+        <button class="tab" data-view="networks">🌐 <span data-i18n="networks">Networks</span></button>
+        <button class="tab" data-view="settings">⚙️ <span data-i18n="settings">Settings</span></button>
+    </nav>
+    
+    <main>
+        <!-- Dashboard View -->
+        <div class="view active" id="dashboard-view">
+            <div class="stats-grid">
+                <div class="stat-card blue">
+                    <div class="stat-label" data-i18n="static_hosts">Static Hosts</div>
+                    <div class="stat-value" id="stat-static">-</div>
+                </div>
+                <div class="stat-card yellow">
+                    <div class="stat-label" data-i18n="dynamic_hosts">Dynamic Hosts</div>
+                    <div class="stat-value" id="stat-dynamic">-</div>
+                </div>
+                <div class="stat-card green">
+                    <div class="stat-label" data-i18n="online_hosts">Online Hosts</div>
+                    <div class="stat-value online" id="stat-online">-</div>
+                </div>
+                <div class="stat-card cyan">
+                    <div class="stat-label" data-i18n="dns_zones">DNS Zones</div>
+                    <div class="stat-value" id="stat-zones">-</div>
+                </div>
+                <div class="stat-card red">
+                    <div class="stat-label" data-i18n="active_leases">Active Leases</div>
+                    <div class="stat-value" id="stat-leases">-</div>
+                </div>
+            </div>
+            
+            <div class="chart-grid">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>📈 <span data-i18n="network_history">Network Status History</span></h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="history-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <h2>🥧 <span data-i18n="host_distribution">Host Distribution</span></h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="distribution-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h2>🖥️ <span data-i18n="services">Services</span></h2>
+                </div>
+                <div class="card-body" id="services-list">
+                    <div class="loading"><div class="spinner"></div> Loading...</div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h2>🏠 <span data-i18n="recent_hosts">Recent Static Hosts</span></h2>
+                </div>
+                <div class="card-body no-padding">
+                    <div class="table-container">
+                        <table id="recent-hosts-table">
+                            <thead>
+                                <tr>
+                                    <th data-i18n="status">Status</th>
+                                    <th data-i18n="hostname">Hostname</th>
+                                    <th data-i18n="mac_address">MAC Address</th>
+                                    <th data-i18n="ip_address">IP Address</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- DHCP View -->
+        <div class="view" id="dhcp-view">
+            <div class="card">
+                <div class="card-header">
+                    <h2>🔗 <span data-i18n="dhcp_static">DHCP Static Mappings</span></h2>
+                    <div class="btn-group">
+                        <div class="search-box">
+                            <input type="text" class="search-input" id="dhcp-search" data-i18n-placeholder="search" placeholder="Search...">
+                        </div>
+                        <button class="btn btn-primary" onclick="showModal('add-dhcp-modal')">➕ <span data-i18n="add_host">Add Host</span></button>
+                    </div>
+                </div>
+                <div class="card-body no-padding">
+                    <div class="filter-tabs" style="padding: 1rem 1.25rem 0;">
+                        <button class="filter-tab active" data-filter="all" data-i18n="all">All</button>
+                        <button class="filter-tab" data-filter="online" data-i18n="online">Online</button>
+                        <button class="filter-tab" data-filter="offline" data-i18n="offline">Offline</button>
+                    </div>
+                    <div class="table-container">
+                        <table id="dhcp-table">
+                            <thead>
+                                <tr>
+                                    <th data-i18n="status">Status</th>
+                                    <th data-i18n="hostname">Hostname</th>
+                                    <th data-i18n="mac_address">MAC Address</th>
+                                    <th data-i18n="ip_address">IP Address</th>
+                                    <th data-i18n="type">Type</th>
+                                    <th data-i18n="actions">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h2>⚙️ <span data-i18n="dhcp_options">DHCP Global Options</span></h2>
+                </div>
+                <div class="card-body" id="dhcp-options"></div>
+            </div>
+        </div>
+        
+        <!-- DNS View -->
+        <div class="view" id="dns-view">
+            <div class="card">
+                <div class="card-header">
+                    <h2>📍 <span data-i18n="dns_zones">DNS Zones</span></h2>
+                    <button class="btn btn-primary" onclick="showModal('add-zone-modal')">➕ <span data-i18n="add_zone">Add Zone</span></button>
+                </div>
+                <div class="card-body">
+                    <div class="zone-tabs" id="zone-tabs"></div>
+                    <div class="search-box" style="margin-bottom: 1rem;">
+                        <input type="text" class="search-input" id="dns-search" data-i18n-placeholder="search" placeholder="Search records...">
+                    </div>
+                    <div class="table-container">
+                        <table id="dns-table">
+                            <thead>
+                                <tr>
+                                    <th data-i18n="status">Status</th>
+                                    <th data-i18n="name">Name</th>
+                                    <th data-i18n="type">Type</th>
+                                    <th data-i18n="value">Value</th>
+                                    <th data-i18n="actions">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Scanner View -->
+        <div class="view" id="scanner-view">
+            <div class="card">
+                <div class="card-header">
+                    <h2>📡 <span data-i18n="ip_scanner">IP Scanner</span> (<span id="scanner-network">192.168.2.0/23</span>)</h2>
+                    <div class="btn-group">
+                        <span id="scan-status" style="color: var(--muted); font-size: 0.85rem;"></span>
+                        <button class="btn btn-primary" id="start-scan-btn">🔄 <span data-i18n="start_scan">Start Scan</span></button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="stats-grid" style="margin-bottom: 1.5rem;">
+                        <div class="stat-card green">
+                            <div class="stat-label" data-i18n="online">Online</div>
+                            <div class="stat-value online" id="scan-online">-</div>
+                        </div>
+                        <div class="stat-card red">
+                            <div class="stat-label" data-i18n="offline">Offline</div>
+                            <div class="stat-value offline" id="scan-offline">-</div>
+                        </div>
+                        <div class="stat-card cyan">
+                            <div class="stat-label" data-i18n="total">Total</div>
+                            <div class="stat-value" id="scan-total">-</div>
+                        </div>
+                        <div class="stat-card blue">
+                            <div class="stat-label" data-i18n="last_scan">Last Scan</div>
+                            <div class="stat-value" id="scan-time" style="font-size: 0.9rem;">-</div>
+                        </div>
+                    </div>
+                    <div class="ip-grid" id="ip-grid"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Leases View -->
+        <div class="view" id="leases-view">
+            <div class="card">
+                <div class="card-header">
+                    <h2>📋 <span data-i18n="dhcp_leases">DHCP Leases</span></h2>
+                    <button class="btn btn-secondary" id="refresh-leases-btn">🔄 <span data-i18n="refresh">Refresh</span></button>
+                </div>
+                <div class="card-body no-padding">
+                    <div class="filter-tabs" style="padding: 1rem 1.25rem 0;">
+                        <button class="filter-tab active" data-filter="all" data-i18n="all">All</button>
+                        <button class="filter-tab" data-filter="active" data-i18n="active">Active</button>
+                        <button class="filter-tab" data-filter="online" data-i18n="online">Online</button>
+                    </div>
+                    <div class="table-container">
+                        <table id="leases-table">
+                            <thead>
+                                <tr>
+                                    <th data-i18n="status">Status</th>
+                                    <th data-i18n="ip_address">IP Address</th>
+                                    <th data-i18n="mac_address">MAC Address</th>
+                                    <th data-i18n="hostname">Hostname</th>
+                                    <th data-i18n="ends">Expires</th>
+                                    <th data-i18n="state">State</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Networks View -->
+        <div class="view" id="networks-view">
+            <div class="card">
+                <div class="card-header">
+                    <h2>🌐 <span data-i18n="network_config">Network Configuration</span></h2>
+                    <button class="btn btn-primary" onclick="showModal('add-network-modal')">➕ <span data-i18n="add_network">Add Network</span></button>
+                </div>
+                <div class="card-body no-padding">
+                    <div class="table-container">
+                        <table id="networks-table">
+                            <thead>
+                                <tr>
+                                    <th data-i18n="network">Network</th>
+                                    <th data-i18n="netmask">Netmask</th>
+                                    <th data-i18n="range">DHCP Range</th>
+                                    <th data-i18n="gateway">Gateway</th>
+                                    <th data-i18n="dns">DNS</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Settings View -->
+        <div class="view" id="settings-view">
+            <div class="card">
+                <div class="card-header">
+                    <h2>🔐 <span data-i18n="sudo_access">Sudo Access</span></h2>
+                </div>
+                <div class="card-body">
+                    <p style="color: var(--muted); margin-bottom: 1rem; font-size: 0.875rem;" data-i18n="sudo_desc">
+                        Enter your sudo password to enable write operations (adding hosts, zones, etc.). 
+                        Password is stored in session memory only and never saved to disk.
+                    </p>
+                    <div id="sudo-status">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label data-i18n="sudo_password">Sudo Password</label>
+                                <input type="password" class="form-input" id="sudo-password-input" placeholder="Enter sudo password">
+                            </div>
+                            <div class="form-group" style="display: flex; align-items: flex-end; gap: 0.5rem;">
+                                <button class="btn btn-primary" id="set-sudo-btn" data-i18n="authorize">Authorize</button>
+                                <button class="btn btn-danger" id="clear-sudo-btn" style="display: none;" data-i18n="revoke">Revoke</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h2>⚙️ <span data-i18n="scan_settings">Scanner Settings</span></h2>
+                </div>
+                <div class="card-body">
+                    <div class="setting-row">
+                        <div>
+                            <div class="setting-label" data-i18n="scan_interval">Scan Interval</div>
+                            <div class="setting-desc" data-i18n="scan_interval_desc">How often to scan the network (seconds)</div>
+                        </div>
+                        <input type="number" class="setting-input" id="setting-scan-interval" value="7200" min="60" step="60">
+                    </div>
+                    <div class="setting-row">
+                        <div>
+                            <div class="setting-label" data-i18n="ping_timeout">Ping Timeout</div>
+                            <div class="setting-desc" data-i18n="ping_timeout_desc">Timeout for ping requests (seconds)</div>
+                        </div>
+                        <input type="number" class="setting-input" id="setting-ping-timeout" value="1" min="1" max="10">
+                    </div>
+                    <div class="setting-row">
+                        <div>
+                            <div class="setting-label" data-i18n="network_range">Network Range</div>
+                            <div class="setting-desc" data-i18n="network_range_desc">CIDR notation (e.g., 192.168.1.0/24)</div>
+                        </div>
+                        <input type="text" class="setting-input" id="setting-network" value="192.168.2.0/23" style="width: 150px;">
+                    </div>
+                    <div class="setting-row">
+                        <div>
+                            <div class="setting-label" data-i18n="max_threads">Max Threads</div>
+                            <div class="setting-desc" data-i18n="max_threads_desc">Concurrent ping threads</div>
+                        </div>
+                        <input type="number" class="setting-input" id="setting-max-threads" value="100" min="10" max="500">
+                    </div>
+                    <div style="margin-top: 1rem;">
+                        <button class="btn btn-primary" id="save-settings-btn" data-i18n="save_settings">Save Settings</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h2>🎨 <span data-i18n="appearance">Appearance</span></h2>
+                </div>
+                <div class="card-body">
+                    <div class="setting-row">
+                        <div>
+                            <div class="setting-label" data-i18n="dark_mode">Dark Mode</div>
+                            <div class="setting-desc" data-i18n="dark_mode_desc">Toggle dark/light theme</div>
+                        </div>
+                        <div class="toggle active" id="theme-toggle-setting"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h2>ℹ️ <span data-i18n="about">About</span></h2>
+                </div>
+                <div class="card-body">
+                    <p style="color: var(--muted); font-size: 0.875rem;">
+                        <strong>IntNetAdmin</strong> v1.0.0<br>
+                        <span data-i18n="slogan">Manage your internal network with ease</span><br><br>
+                        © 2026 Daniel Nylander<br>
+                        Licensed under <a href="https://www.gnu.org/licenses/gpl-3.0.html" target="_blank" style="color: var(--primary);">GPL-3.0</a>
+                    </p>
+                    <div style="margin-top: 1rem;">
+                        <a href="https://github.com/yeager/IntNetAdmin" target="_blank" style="display: inline-flex; align-items: center; gap: 0.5rem; color: var(--text); text-decoration: none; padding: 0.5rem 1rem; background: var(--bg); border-radius: 6px; border: 1px solid var(--border);">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                            <span>View on GitHub</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Add DHCP Host Modal -->
+    <div class="modal-overlay" id="add-dhcp-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 data-i18n="add_dhcp_host">Add DHCP Static Host</h2>
+                <button class="modal-close" onclick="hideModal('add-dhcp-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label data-i18n="hostname">Hostname</label>
+                    <input type="text" class="form-input" id="new-host-name" placeholder="server01">
+                    <div class="form-hint" data-i18n="hostname_hint">Alphanumeric, hyphens allowed</div>
+                </div>
+                <div class="form-group">
+                    <label data-i18n="mac_address">MAC Address</label>
+                    <input type="text" class="form-input" id="new-host-mac" placeholder="00:11:22:33:44:55">
+                    <div class="form-hint" data-i18n="mac_hint">Format: XX:XX:XX:XX:XX:XX</div>
+                </div>
+                <div class="form-group">
+                    <label data-i18n="ip_address">IP Address</label>
+                    <input type="text" class="form-input" id="new-host-ip" placeholder="192.168.2.100">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="hideModal('add-dhcp-modal')" data-i18n="cancel">Cancel</button>
+                <button class="btn btn-primary" onclick="addDhcpHost()" data-i18n="add_host">Add Host</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Add DNS Zone Modal -->
+    <div class="modal-overlay" id="add-zone-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 data-i18n="add_dns_zone">Add DNS Zone</h2>
+                <button class="modal-close" onclick="hideModal('add-zone-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label data-i18n="zone_name">Zone Name</label>
+                    <input type="text" class="form-input" id="new-zone-name" placeholder="example.local">
+                </div>
+                <div class="form-group">
+                    <label data-i18n="soa_ns">Primary Nameserver</label>
+                    <input type="text" class="form-input" id="new-zone-ns" placeholder="ns1.example.local">
+                </div>
+                <div class="form-group">
+                    <label data-i18n="soa_email">Admin Email</label>
+                    <input type="text" class="form-input" id="new-zone-email" placeholder="admin@example.local">
+                </div>
+                <div class="form-group">
+                    <label data-i18n="ttl">Default TTL (seconds)</label>
+                    <input type="number" class="form-input" id="new-zone-ttl" value="86400">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="hideModal('add-zone-modal')" data-i18n="cancel">Cancel</button>
+                <button class="btn btn-primary" onclick="addDnsZone()" data-i18n="add_zone">Add Zone</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Add Network Modal -->
+    <div class="modal-overlay" id="add-network-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 data-i18n="add_network">Add Network</h2>
+                <button class="modal-close" onclick="hideModal('add-network-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label data-i18n="network">Network Address</label>
+                        <input type="text" class="form-input" id="new-net-address" placeholder="192.168.10.0">
+                    </div>
+                    <div class="form-group">
+                        <label data-i18n="netmask">Netmask</label>
+                        <input type="text" class="form-input" id="new-net-mask" placeholder="255.255.255.0">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label data-i18n="range_start">DHCP Range Start</label>
+                        <input type="text" class="form-input" id="new-net-start" placeholder="192.168.10.100">
+                    </div>
+                    <div class="form-group">
+                        <label data-i18n="range_end">DHCP Range End</label>
+                        <input type="text" class="form-input" id="new-net-end" placeholder="192.168.10.200">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="hideModal('add-network-modal')" data-i18n="cancel">Cancel</button>
+                <button class="btn btn-primary" onclick="addNetwork()" data-i18n="add_network">Add Network</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Edit DHCP Host Modal -->
+    <div class="modal-overlay" id="edit-dhcp-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 data-i18n="edit_dhcp_host">Edit DHCP Host</h2>
+                <button class="modal-close" onclick="hideModal('edit-dhcp-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="edit-host-original-name">
+                <div class="form-group">
+                    <label data-i18n="hostname">Hostname</label>
+                    <input type="text" class="form-input" id="edit-host-name" disabled>
+                </div>
+                <div class="form-group">
+                    <label data-i18n="mac_address">MAC Address</label>
+                    <input type="text" class="form-input" id="edit-host-mac" placeholder="00:11:22:33:44:55">
+                </div>
+                <div class="form-group">
+                    <label data-i18n="ip_address">IP Address</label>
+                    <input type="text" class="form-input" id="edit-host-ip" placeholder="192.168.2.100">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="hideModal('edit-dhcp-modal')" data-i18n="cancel">Cancel</button>
+                <button class="btn btn-primary" onclick="saveDhcpHost()" data-i18n="save">Save</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Edit DNS Record Modal -->
+    <div class="modal-overlay" id="edit-dns-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 data-i18n="edit_dns_record">Edit DNS Record</h2>
+                <button class="modal-close" onclick="hideModal('edit-dns-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="edit-dns-zone">
+                <input type="hidden" id="edit-dns-original-name">
+                <input type="hidden" id="edit-dns-original-type">
+                <div class="form-group">
+                    <label data-i18n="name">Name</label>
+                    <input type="text" class="form-input" id="edit-dns-name" disabled>
+                </div>
+                <div class="form-group">
+                    <label data-i18n="type">Type</label>
+                    <input type="text" class="form-input" id="edit-dns-type" disabled>
+                </div>
+                <div class="form-group">
+                    <label data-i18n="value">Value</label>
+                    <input type="text" class="form-input" id="edit-dns-value">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="hideModal('edit-dns-modal')" data-i18n="cancel">Cancel</button>
+                <button class="btn btn-primary" onclick="saveDnsRecord()" data-i18n="save">Save</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Activate Changes Modal -->
+    <div class="modal-overlay" id="activate-modal">
+        <div class="modal" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2>⚡ <span data-i18n="activate_changes">Activate Changes</span></h2>
+                <button class="modal-close" onclick="hideModal('activate-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p style="color: var(--muted); margin-bottom: 1rem;" data-i18n="activate_desc">
+                    The following changes will be written to disk. This action requires sudo privileges.
+                </p>
+                <div id="changes-preview" style="background: var(--bg); border-radius: 8px; padding: 1rem; font-family: monospace; font-size: 0.85rem; max-height: 300px; overflow-y: auto;">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="discardChanges()" data-i18n="discard">Discard All</button>
+                <button class="btn btn-secondary" onclick="hideModal('activate-modal')" data-i18n="cancel">Cancel</button>
+                <button class="btn btn-success" onclick="applyChanges()" data-i18n="apply">Apply Changes</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Sudo Required Modal -->
+    <div class="modal-overlay" id="sudo-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 data-i18n="sudo_required">Sudo Password Required</h2>
+                <button class="modal-close" onclick="hideModal('sudo-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p style="color: var(--muted); margin-bottom: 1rem; font-size: 0.875rem;" data-i18n="sudo_modal_desc">
+                    This action requires sudo privileges. Enter your password to continue.
+                </p>
+                <div class="form-group">
+                    <label data-i18n="sudo_password">Sudo Password</label>
+                    <input type="password" class="form-input" id="sudo-modal-password">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="hideModal('sudo-modal')" data-i18n="cancel">Cancel</button>
+                <button class="btn btn-primary" id="sudo-modal-submit" data-i18n="authorize">Authorize</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Toast Container -->
+    <div class="toast-container" id="toast-container"></div>
+    
+    <script>
+        // ========================================================================
+        // Translations
+        // ========================================================================
+        const translations = {
+            en: {
+                slogan: 'Manage your internal network with ease',
+                dashboard: 'Dashboard',
+                dhcp: 'DHCP',
+                dns: 'DNS',
+                scanner: 'IP Scanner',
+                leases: 'Leases',
+                networks: 'Networks',
+                settings: 'Settings',
+                logout: 'Logout',
+                static_hosts: 'Static Hosts',
+                dynamic_hosts: 'Dynamic Hosts',
+                dns_zones: 'DNS Zones',
+                online_hosts: 'Online Hosts',
+                active_leases: 'Active Leases',
+                services: 'Services',
+                recent_hosts: 'Recent Static Hosts',
+                hostname: 'Hostname',
+                mac_address: 'MAC Address',
+                ip_address: 'IP Address',
+                status: 'Status',
+                type: 'Type',
+                dhcp_static: 'DHCP Static Mappings',
+                dhcp_options: 'DHCP Global Options',
+                dhcp_leases: 'DHCP Leases',
+                search: 'Search...',
+                name: 'Name',
+                value: 'Value',
+                ip_scanner: 'IP Scanner',
+                start_scan: 'Start Scan',
+                online: 'Online',
+                offline: 'Offline',
+                total: 'Total',
+                last_scan: 'Last scan',
+                next_scan: 'Next scan',
+                refresh: 'Refresh',
+                ends: 'Expires',
+                state: 'State',
+                all: 'All',
+                active: 'Active',
+                network_config: 'Network Configuration',
+                network: 'Network',
+                netmask: 'Netmask',
+                range: 'DHCP Range',
+                gateway: 'Gateway',
+                sudo_access: 'Sudo Access',
+                sudo_desc: 'Enter your sudo password to enable write operations. Password is stored in session memory only.',
+                sudo_password: 'Sudo Password',
+                authorize: 'Authorize',
+                revoke: 'Revoke',
+                scan_settings: 'Scanner Settings',
+                scan_interval: 'Scan Interval',
+                scan_interval_desc: 'How often to scan the network (seconds)',
+                ping_timeout: 'Ping Timeout',
+                ping_timeout_desc: 'Timeout for ping requests (seconds)',
+                network_range: 'Network Range',
+                network_range_desc: 'CIDR notation (e.g., 192.168.1.0/24)',
+                max_threads: 'Max Threads',
+                max_threads_desc: 'Concurrent ping threads',
+                save_settings: 'Save Settings',
+                appearance: 'Appearance',
+                dark_mode: 'Dark Mode',
+                dark_mode_desc: 'Toggle dark/light theme',
+                about: 'About',
+                add_host: 'Add Host',
+                add_zone: 'Add Zone',
+                add_network: 'Add Network',
+                add_dhcp_host: 'Add DHCP Static Host',
+                add_dns_zone: 'Add DNS Zone',
+                cancel: 'Cancel',
+                hostname_hint: 'Alphanumeric, hyphens allowed',
+                mac_hint: 'Format: XX:XX:XX:XX:XX:XX',
+                zone_name: 'Zone Name',
+                soa_ns: 'Primary Nameserver',
+                soa_email: 'Admin Email',
+                ttl: 'Default TTL (seconds)',
+                range_start: 'DHCP Range Start',
+                range_end: 'DHCP Range End',
+                sudo_required: 'Sudo Password Required',
+                sudo_modal_desc: 'This action requires sudo privileges.',
+                running: 'Running',
+                stopped: 'Stopped',
+                restart: 'Restart',
+                scanning: 'Scanning...',
+                never: 'Never',
+                network_history: 'Network Status History',
+                host_distribution: 'Host Distribution',
+                static: 'Static',
+                dynamic: 'Dynamic',
+                success: 'Success',
+                error: 'Error',
+                host_added: 'Host added successfully',
+                zone_created: 'Zone created successfully',
+                settings_saved: 'Settings saved',
+                sudo_authorized: 'Sudo access granted',
+                sudo_revoked: 'Sudo access revoked',
+                actions: 'Actions',
+                edit: 'Edit',
+                delete: 'Delete',
+                save: 'Save',
+                discard: 'Discard',
+                apply: 'Apply',
+                activate_changes: 'Activate Changes',
+                activate_desc: 'The following changes will be written to disk.',
+                edit_dhcp_host: 'Edit DHCP Host',
+                edit_dns_record: 'Edit DNS Record',
+                changes_applied: 'Changes applied successfully',
+                changes_discarded: 'Changes discarded',
+                change_staged: 'Change staged for activation',
+                confirm_delete: 'Are you sure you want to delete this?'
+            },
+            sv: {
+                slogan: 'Hantera ditt interna nätverk enkelt',
+                dashboard: 'Översikt',
+                dhcp: 'DHCP',
+                dns: 'DNS',
+                scanner: 'IP-skanner',
+                leases: 'Lån',
+                networks: 'Nätverk',
+                settings: 'Inställningar',
+                logout: 'Logga ut',
+                static_hosts: 'Statiska värdar',
+                dynamic_hosts: 'Dynamiska värdar',
+                dns_zones: 'DNS-zoner',
+                online_hosts: 'Online-värdar',
+                active_leases: 'Aktiva lån',
+                services: 'Tjänster',
+                recent_hosts: 'Senaste statiska värdar',
+                hostname: 'Värdnamn',
+                mac_address: 'MAC-adress',
+                ip_address: 'IP-adress',
+                status: 'Status',
+                type: 'Typ',
+                dhcp_static: 'DHCP statiska mappningar',
+                dhcp_options: 'DHCP globala alternativ',
+                dhcp_leases: 'DHCP-lån',
+                search: 'Sök...',
+                name: 'Namn',
+                value: 'Värde',
+                ip_scanner: 'IP-skanner',
+                start_scan: 'Starta skanning',
+                online: 'Online',
+                offline: 'Offline',
+                total: 'Totalt',
+                last_scan: 'Senaste skanning',
+                next_scan: 'Nästa skanning',
+                refresh: 'Uppdatera',
+                ends: 'Utgår',
+                state: 'Status',
+                all: 'Alla',
+                active: 'Aktiv',
+                network_config: 'Nätverkskonfiguration',
+                network: 'Nätverk',
+                netmask: 'Nätmask',
+                range: 'DHCP-intervall',
+                gateway: 'Gateway',
+                sudo_access: 'Sudo-åtkomst',
+                sudo_desc: 'Ange ditt sudo-lösenord för att aktivera skrivoperationer. Lösenord lagras endast i sessionsminnet.',
+                sudo_password: 'Sudo-lösenord',
+                authorize: 'Auktorisera',
+                revoke: 'Återkalla',
+                scan_settings: 'Skannerinställningar',
+                scan_interval: 'Skanningsintervall',
+                scan_interval_desc: 'Hur ofta nätverket skannas (sekunder)',
+                ping_timeout: 'Ping-timeout',
+                ping_timeout_desc: 'Timeout för ping-förfrågningar (sekunder)',
+                network_range: 'Nätverksomfång',
+                network_range_desc: 'CIDR-notation (t.ex. 192.168.1.0/24)',
+                max_threads: 'Max trådar',
+                max_threads_desc: 'Samtidiga ping-trådar',
+                save_settings: 'Spara inställningar',
+                appearance: 'Utseende',
+                dark_mode: 'Mörkt läge',
+                dark_mode_desc: 'Växla mellan mörkt/ljust tema',
+                about: 'Om',
+                add_host: 'Lägg till värd',
+                add_zone: 'Lägg till zon',
+                add_network: 'Lägg till nätverk',
+                add_dhcp_host: 'Lägg till DHCP statisk värd',
+                add_dns_zone: 'Lägg till DNS-zon',
+                cancel: 'Avbryt',
+                hostname_hint: 'Alfanumeriskt, bindestreck tillåtet',
+                mac_hint: 'Format: XX:XX:XX:XX:XX:XX',
+                zone_name: 'Zonnamn',
+                soa_ns: 'Primär namnserver',
+                soa_email: 'Admin e-post',
+                ttl: 'Standard TTL (sekunder)',
+                range_start: 'DHCP-intervall start',
+                range_end: 'DHCP-intervall slut',
+                sudo_required: 'Sudo-lösenord krävs',
+                sudo_modal_desc: 'Denna åtgärd kräver sudo-behörighet.',
+                running: 'Körs',
+                stopped: 'Stoppad',
+                restart: 'Starta om',
+                scanning: 'Skannar...',
+                never: 'Aldrig',
+                network_history: 'Nätverksstatushistorik',
+                host_distribution: 'Värdfördelning',
+                static: 'Statisk',
+                dynamic: 'Dynamisk',
+                success: 'Klart',
+                error: 'Fel',
+                host_added: 'Värd tillagd',
+                zone_created: 'Zon skapad',
+                settings_saved: 'Inställningar sparade',
+                sudo_authorized: 'Sudo-åtkomst beviljad',
+                sudo_revoked: 'Sudo-åtkomst återkallad',
+                actions: 'Åtgärder',
+                edit: 'Redigera',
+                delete: 'Ta bort',
+                save: 'Spara',
+                discard: 'Kasta',
+                apply: 'Verkställ',
+                activate_changes: 'Aktivera ändringar',
+                activate_desc: 'Följande ändringar kommer skrivas till disk.',
+                edit_dhcp_host: 'Redigera DHCP-värd',
+                edit_dns_record: 'Redigera DNS-post',
+                changes_applied: 'Ändringar verkställda',
+                changes_discarded: 'Ändringar kastade',
+                change_staged: 'Ändring förberedd för aktivering',
+                confirm_delete: 'Är du säker på att du vill ta bort detta?'
+            }
+        };
+        
+        // ========================================================================
+        // State
+        // ========================================================================
+        let currentLang = localStorage.getItem('lang') || 'en';
+        let darkMode = localStorage.getItem('darkMode') !== 'false';
+        let dhcpData = null;
+        let dnsData = null;
+        let scanData = null;
+        let statsData = null;
+        let currentZone = 0;
+        let hasSudo = false;
+        let historyChart = null;
+        let distributionChart = null;
+        let pendingSudoCallback = null;
+        
+        // ========================================================================
+        // Utilities
+        // ========================================================================
+        const t = key => translations[currentLang][key] || key;
+        
+        function applyTranslations() {
+            const trans = translations[currentLang];
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.dataset.i18n;
+                if (trans[key]) el.textContent = trans[key];
+            });
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+                const key = el.dataset.i18nPlaceholder;
+                if (trans[key]) el.placeholder = trans[key];
+            });
+        }
+        
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `${type === 'success' ? '✓' : '✗'} ${message}`;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 4000);
+        }
+        
+        function showModal(id) {
+            document.getElementById(id).classList.add('active');
+        }
+        
+        function hideModal(id) {
+            document.getElementById(id).classList.remove('active');
+        }
+        
+        function formatTime(isoString) {
+            if (!isoString) return t('never');
+            const date = new Date(isoString);
+            return date.toLocaleTimeString(currentLang === 'sv' ? 'sv-SE' : 'en-GB', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+        }
+        
+        function formatDateTime(isoString) {
+            if (!isoString) return t('never');
+            const date = new Date(isoString);
+            return date.toLocaleString(currentLang === 'sv' ? 'sv-SE' : 'en-GB', { 
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+        }
+        
+        // ========================================================================
+        // Theme
+        // ========================================================================
+        function applyTheme() {
+            if (darkMode) {
+                document.documentElement.classList.remove('light');
+                document.getElementById('theme-toggle').textContent = '🌙';
+            } else {
+                document.documentElement.classList.add('light');
+                document.getElementById('theme-toggle').textContent = '☀️';
+            }
+            document.getElementById('theme-toggle-setting')?.classList.toggle('active', darkMode);
+        }
+        
+        document.getElementById('theme-toggle').addEventListener('click', () => {
+            darkMode = !darkMode;
+            localStorage.setItem('darkMode', darkMode);
+            applyTheme();
+        });
+        
+        document.getElementById('theme-toggle-setting')?.addEventListener('click', function() {
+            darkMode = !darkMode;
+            localStorage.setItem('darkMode', darkMode);
+            applyTheme();
+        });
+        
+        // ========================================================================
+        // Language
+        // ========================================================================
+        document.querySelectorAll('.lang-btn').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentLang = btn.dataset.lang;
+                localStorage.setItem('lang', currentLang);
+                await fetch('/api/lang', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ lang: currentLang })
+                });
+                applyTranslations();
+                updateCharts();
+            });
+        });
+        
+        // ========================================================================
+        // Navigation
+        // ========================================================================
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+                tab.classList.add('active');
+                document.getElementById(tab.dataset.view + '-view').classList.add('active');
+            });
+        });
+        
+        // ========================================================================
+        // API Functions
+        // ========================================================================
+        async function loadUser() {
+            const res = await fetch('/api/user');
+            const data = await res.json();
+            document.getElementById('username').textContent = data.username;
+            hasSudo = data.has_sudo;
+            updateSudoUI();
+        }
+        
+        function updateSudoUI() {
+            const badge = document.getElementById('sudo-badge');
+            const clearBtn = document.getElementById('clear-sudo-btn');
+            
+            if (hasSudo) {
+                badge.style.display = 'inline';
+                clearBtn.style.display = 'inline-flex';
+            } else {
+                badge.style.display = 'none';
+                clearBtn.style.display = 'none';
+            }
+        }
+        
+        async function loadStats() {
+            const res = await fetch('/api/stats');
+            statsData = await res.json();
+            
+            document.getElementById('stat-static').textContent = statsData.static_hosts;
+            document.getElementById('stat-dynamic').textContent = statsData.dynamic_hosts;
+            document.getElementById('stat-online').textContent = statsData.online_hosts;
+            document.getElementById('stat-zones').textContent = statsData.dns_zones;
+            document.getElementById('stat-leases').textContent = statsData.active_leases;
+            
+            // Update header scan info
+            document.getElementById('header-last-scan').textContent = formatTime(statsData.last_scan);
+            if (statsData.last_scan && statsData.scan_interval) {
+                const nextScan = new Date(new Date(statsData.last_scan).getTime() + statsData.scan_interval * 1000);
+                document.getElementById('header-next-scan').textContent = formatTime(nextScan.toISOString());
+            }
+        }
+        
+        async function loadDHCP() {
+            const res = await fetch('/api/dhcp');
+            dhcpData = await res.json();
+            
+            const tbody = document.querySelector('#dhcp-table tbody');
+            tbody.innerHTML = dhcpData.hosts?.map(h => `
+                <tr data-online="${h.online}" data-type="static" data-hostname="${h.name}">
+                    <td><span class="status-dot ${h.online === true ? 'online' : h.online === false ? 'offline' : 'unknown'}"></span></td>
+                    <td><strong>${h.name}</strong></td>
+                    <td><code>${h.mac}</code></td>
+                    <td><code>${h.address || '-'}</code></td>
+                    <td><span class="badge static">${t('static')}</span></td>
+                    <td>
+                        <button class="btn btn-sm btn-secondary" onclick="editDhcpHost('${h.name}', '${h.mac}', '${h.address || ''}')" title="${t('edit')}">✏️</button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteDhcpHost('${h.name}')" title="${t('delete')}">🗑️</button>
+                    </td>
+                </tr>
+            `).join('') || '<tr><td colspan="6">No data</td></tr>';
+            
+            // Recent hosts table
+            const recentTbody = document.querySelector('#recent-hosts-table tbody');
+            recentTbody.innerHTML = dhcpData.hosts?.slice(0, 10).map(h => `
+                <tr>
+                    <td><span class="status-dot ${h.online === true ? 'online' : h.online === false ? 'offline' : 'unknown'}"></span></td>
+                    <td><strong>${h.name}</strong></td>
+                    <td><code>${h.mac}</code></td>
+                    <td><code>${h.address || '-'}</code></td>
+                </tr>
+            `).join('') || '';
+            
+            // Options
+            const optionsDiv = document.getElementById('dhcp-options');
+            const opts = Object.entries(dhcpData.options || {});
+            optionsDiv.innerHTML = opts.length ? opts.map(([k, v]) => `
+                <div class="setting-row">
+                    <div class="setting-label">${k}</div>
+                    <code>${v}</code>
+                </div>
+            `).join('') : '<p style="color:var(--muted)">No global options configured</p>';
+        }
+        
+        async function loadDNS() {
+            const res = await fetch('/api/dns');
+            dnsData = await res.json();
+            
+            // Zone tabs
+            const zoneTabs = document.getElementById('zone-tabs');
+            zoneTabs.innerHTML = dnsData.zones?.map((z, i) => `
+                <button class="zone-tab ${i === currentZone ? 'active' : ''}" data-zone="${i}">
+                    ${z.name} <small style="opacity:0.6">(${z.record_count || 0})</small>
+                </button>
+            `).join('') || '<span style="color:var(--muted)">No zones found</span>';
+            
+            zoneTabs.querySelectorAll('.zone-tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    document.querySelectorAll('.zone-tab').forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    currentZone = parseInt(tab.dataset.zone);
+                    renderDNSRecords();
+                });
+            });
+            
+            renderDNSRecords();
+        }
+        
+        function renderDNSRecords() {
+            if (!dnsData?.zones?.[currentZone]) return;
+            
+            const zone = dnsData.zones[currentZone];
+            const tbody = document.querySelector('#dns-table tbody');
+            
+            tbody.innerHTML = zone.records?.map(r => `
+                <tr>
+                    <td>${r.type === 'A' ? `<span class="status-dot ${r.online === true ? 'online' : r.online === false ? 'offline' : 'unknown'}"></span>` : ''}</td>
+                    <td><code>${r.name}</code></td>
+                    <td><span class="record-type ${r.type}">${r.type}</span></td>
+                    <td><code>${r.value}</code>${r.priority ? ` <small>(pri: ${r.priority})</small>` : ''}</td>
+                    <td>
+                        <button class="btn btn-sm btn-secondary" onclick="editDnsRecord('${zone.name}', '${r.name}', '${r.type}', '${r.value}')" title="${t('edit')}">✏️</button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteDnsRecord('${zone.name}', '${r.name}', '${r.type}')" title="${t('delete')}">🗑️</button>
+                    </td>
+                </tr>
+            `).join('') || '<tr><td colspan="5">No records</td></tr>';
+        }
+        
+        async function loadScan() {
+            const res = await fetch('/api/scan');
+            scanData = await res.json();
+            
+            const online = scanData.online_count || 0;
+            const total = scanData.total_count || 0;
+            
+            document.getElementById('scan-online').textContent = online;
+            document.getElementById('scan-offline').textContent = total - online;
+            document.getElementById('scan-total').textContent = total;
+            document.getElementById('scan-time').textContent = formatDateTime(scanData.last_scan);
+            document.getElementById('scan-status').textContent = scanData.in_progress ? t('scanning') : '';
+            document.getElementById('start-scan-btn').disabled = scanData.in_progress;
+            
+            // IP Grid - show only responding hosts for clarity
+            const grid = document.getElementById('ip-grid');
+            const sortedIps = Object.entries(scanData.results || {})
+                .filter(([ip, data]) => data.online)
+                .sort(([a], [b]) => {
+                    const aParts = a.split('.').map(Number);
+                    const bParts = b.split('.').map(Number);
+                    for (let i = 0; i < 4; i++) {
+                        if (aParts[i] !== bParts[i]) return aParts[i] - bParts[i];
+                    }
+                    return 0;
+                });
+            
+            grid.innerHTML = sortedIps.map(([ip, data]) => {
+                const host = dhcpData?.hosts?.find(h => h.address === ip);
+                return `
+                    <div class="ip-cell online" title="${ip}${host ? ' - ' + host.name : ''}">
+                        <div class="ip">${ip.split('.').slice(-2).join('.')}</div>
+                        ${host ? `<div class="hostname">${host.name}</div>` : ''}
+                    </div>
+                `;
+            }).join('') || '<div style="padding:2rem;color:var(--muted);text-align:center;">No hosts online or scan not yet run</div>';
+        }
+        
+        async function loadLeases() {
+            const res = await fetch('/api/leases');
+            const data = await res.json();
+            
+            const tbody = document.querySelector('#leases-table tbody');
+            tbody.innerHTML = data.leases?.map(l => `
+                <tr data-state="${l.state}" data-online="${l.online}">
+                    <td><span class="status-dot ${l.online ? 'online' : 'offline'}"></span></td>
+                    <td><code>${l.ip}</code></td>
+                    <td><code>${l.mac || '-'}</code></td>
+                    <td>${l.hostname || '-'}</td>
+                    <td>${l.ends || '-'}</td>
+                    <td><span class="badge ${l.state === 'active' ? 'online' : 'offline'}">${l.state || '-'}</span></td>
+                </tr>
+            `).join('') || '<tr><td colspan="6">No leases found</td></tr>';
+        }
+        
+        async function loadNetworks() {
+            const res = await fetch('/api/networks');
+            const data = await res.json();
+            
+            const tbody = document.querySelector('#networks-table tbody');
+            tbody.innerHTML = data.networks?.map(n => `
+                <tr>
+                    <td><code>${n.network}</code></td>
+                    <td><code>${n.netmask}</code></td>
+                    <td>${n.range_start && n.range_end ? `${n.range_start} - ${n.range_end}` : '-'}</td>
+                    <td>${n.options?.routers || '-'}</td>
+                    <td>${n.options?.['domain-name-servers'] || '-'}</td>
+                </tr>
+            `).join('') || '<tr><td colspan="5">No networks configured</td></tr>';
+        }
+        
+        async function loadServices() {
+            const res = await fetch('/api/services');
+            const services = await res.json();
+            
+            const div = document.getElementById('services-list');
+            div.innerHTML = Object.entries(services).map(([name, status]) => `
+                <div class="setting-row">
+                    <div>
+                        <div class="setting-label">${name}</div>
+                        <span class="badge ${status}">${t(status) || status}</span>
+                    </div>
+                    <button class="btn btn-sm btn-secondary" onclick="restartService('${name}')">${t('restart')}</button>
+                </div>
+            `).join('');
+        }
+        
+        async function loadConfig() {
+            const res = await fetch('/api/config');
+            const config = await res.json();
+            
+            document.getElementById('setting-scan-interval').value = config.scan_interval;
+            document.getElementById('setting-ping-timeout').value = config.ping_timeout;
+            document.getElementById('setting-network').value = config.network;
+            document.getElementById('setting-max-threads').value = config.max_threads;
+            document.getElementById('scanner-network').textContent = config.network;
+        }
+        
+        async function loadHistory() {
+            // Try lease history first for more accurate data
+            try {
+                const leaseRes = await fetch('/api/lease/history');
+                const leaseData = await leaseRes.json();
+                if (leaseData.history?.length > 0) {
+                    updateChartsWithLeaseData(leaseData.history);
+                    return;
+                }
+            } catch (e) { /* fallback to scan history */ }
+            
+            const res = await fetch('/api/scan/history');
+            const data = await res.json();
+            updateCharts(data.history);
+        }
+        
+        function updateChartsWithLeaseData(history) {
+            const ctx1 = document.getElementById('history-chart')?.getContext('2d');
+            if (!ctx1 || !history.length) return;
+            
+            const labels = history.map(h => formatTime(h.timestamp));
+            const requestsData = history.map(h => h.requests);
+            const hostsData = history.map(h => h.unique_hosts);
+            
+            if (historyChart) historyChart.destroy();
+            historyChart = new Chart(ctx1, {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [
+                        {
+                            label: 'DHCP Requests',
+                            data: requestsData,
+                            borderColor: '#3b82f6',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            fill: true,
+                            tension: 0.3
+                        },
+                        {
+                            label: 'Unique Hosts',
+                            data: hostsData,
+                            borderColor: '#22c55e',
+                            backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                            fill: true,
+                            tension: 0.3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'top' } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.1)' } },
+                        x: { grid: { color: 'rgba(255,255,255,0.05)' } }
+                    }
+                }
+            });
+            
+            // Still update distribution chart with stats
+            if (statsData) {
+                const ctx2 = document.getElementById('distribution-chart')?.getContext('2d');
+                if (ctx2) {
+                    if (distributionChart) distributionChart.destroy();
+                    distributionChart = new Chart(ctx2, {
+                        type: 'doughnut',
+                        data: {
+                            labels: [t('static'), t('dynamic'), t('offline')],
+                            datasets: [{
+                                data: [
+                                    statsData.static_hosts,
+                                    statsData.dynamic_hosts,
+                                    Math.max(0, (statsData.static_hosts + statsData.dynamic_hosts) - statsData.online_hosts)
+                                ],
+                                backgroundColor: ['#3b82f6', '#f59e0b', '#ef4444'],
+                                borderWidth: 0
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: { legend: { position: 'right' } }
+                        }
+                    });
+                }
+            }
+        }
+        
+        // ========================================================================
+        // Charts
+        // ========================================================================
+        function updateCharts(history) {
+            const ctx1 = document.getElementById('history-chart')?.getContext('2d');
+            const ctx2 = document.getElementById('distribution-chart')?.getContext('2d');
+            
+            if (!ctx1 || !ctx2) return;
+            
+            // History chart
+            if (history && history.length > 0) {
+                const labels = history.map(h => formatTime(h.timestamp));
+                const onlineData = history.map(h => h.online);
+                const offlineData = history.map(h => h.offline);
+                
+                if (historyChart) historyChart.destroy();
+                historyChart = new Chart(ctx1, {
+                    type: 'line',
+                    data: {
+                        labels,
+                        datasets: [
+                            {
+                                label: t('online'),
+                                data: onlineData,
+                                borderColor: '#22c55e',
+                                backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                                fill: true,
+                                tension: 0.3
+                            },
+                            {
+                                label: t('offline'),
+                                data: offlineData,
+                                borderColor: '#ef4444',
+                                backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                                fill: true,
+                                tension: 0.3
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { position: 'top' } },
+                        scales: {
+                            y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.1)' } },
+                            x: { grid: { color: 'rgba(255,255,255,0.05)' } }
+                        }
+                    }
+                });
+            }
+            
+            // Distribution chart
+            if (statsData) {
+                if (distributionChart) distributionChart.destroy();
+                distributionChart = new Chart(ctx2, {
+                    type: 'doughnut',
+                    data: {
+                        labels: [t('static'), t('dynamic'), t('offline')],
+                        datasets: [{
+                            data: [
+                                statsData.static_hosts,
+                                statsData.dynamic_hosts,
+                                Math.max(0, (statsData.static_hosts + statsData.dynamic_hosts) - statsData.online_hosts)
+                            ],
+                            backgroundColor: ['#3b82f6', '#f59e0b', '#ef4444'],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { position: 'right' } }
+                    }
+                });
+            }
+        }
+        
+        // ========================================================================
+        // Actions
+        // ========================================================================
+        async function restartService(name) {
+            if (!hasSudo) {
+                pendingSudoCallback = () => restartService(name);
+                showModal('sudo-modal');
+                return;
+            }
+            
+            const res = await fetch(`/api/services/${name}/restart`, { method: 'POST' });
+            const data = await res.json();
+            
+            if (data.status === 'success') {
+                showToast(`${name} restarted`);
+                loadServices();
+            } else {
+                showToast(data.error || 'Failed to restart', 'error');
+            }
+        }
+        
+        document.getElementById('start-scan-btn').addEventListener('click', async () => {
+            const res = await fetch('/api/scan/start', { method: 'POST' });
+            document.getElementById('scan-status').textContent = t('scanning');
+            document.getElementById('start-scan-btn').disabled = true;
+            
+            // Poll for updates
+            const poll = setInterval(async () => {
+                await loadScan();
+                if (!scanData.in_progress) {
+                    clearInterval(poll);
+                    loadStats();
+                    loadHistory();
+                }
+            }, 3000);
+        });
+        
+        document.getElementById('refresh-leases-btn').addEventListener('click', loadLeases);
+        
+        // ========================================================================
+        // Sudo Management
+        // ========================================================================
+        document.getElementById('set-sudo-btn').addEventListener('click', async () => {
+            const password = document.getElementById('sudo-password-input').value;
+            if (!password) return;
+            
+            const res = await fetch('/api/sudo', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ password })
+            });
+            
+            if (res.ok) {
+                hasSudo = true;
+                updateSudoUI();
+                document.getElementById('sudo-password-input').value = '';
+                showToast(t('sudo_authorized'));
+            } else {
+                showToast('Invalid password', 'error');
+            }
+        });
+        
+        document.getElementById('clear-sudo-btn').addEventListener('click', async () => {
+            await fetch('/api/sudo/clear', { method: 'POST' });
+            hasSudo = false;
+            updateSudoUI();
+            showToast(t('sudo_revoked'));
+        });
+        
+        document.getElementById('sudo-modal-submit').addEventListener('click', async () => {
+            const password = document.getElementById('sudo-modal-password').value;
+            if (!password) return;
+            
+            const res = await fetch('/api/sudo', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ password })
+            });
+            
+            if (res.ok) {
+                hasSudo = true;
+                updateSudoUI();
+                hideModal('sudo-modal');
+                document.getElementById('sudo-modal-password').value = '';
+                showToast(t('sudo_authorized'));
+                
+                if (pendingSudoCallback) {
+                    pendingSudoCallback();
+                    pendingSudoCallback = null;
+                }
+            } else {
+                showToast('Invalid password', 'error');
+            }
+        });
+        
+        // ========================================================================
+        // Add DHCP Host
+        // ========================================================================
+        async function addDhcpHost() {
+            if (!hasSudo) {
+                pendingSudoCallback = addDhcpHost;
+                showModal('sudo-modal');
+                return;
+            }
+            
+            const hostname = document.getElementById('new-host-name').value.trim();
+            const mac = document.getElementById('new-host-mac').value.trim().toLowerCase();
+            const ip = document.getElementById('new-host-ip').value.trim();
+            
+            if (!hostname || !mac || !ip) {
+                showToast('Please fill in all fields', 'error');
+                return;
+            }
+            
+            const res = await fetch('/api/dhcp/host', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ hostname, mac, ip })
+            });
+            
+            const data = await res.json();
+            
+            if (res.ok) {
+                showToast(t('host_added'));
+                hideModal('add-dhcp-modal');
+                document.getElementById('new-host-name').value = '';
+                document.getElementById('new-host-mac').value = '';
+                document.getElementById('new-host-ip').value = '';
+                loadDHCP();
+                loadStats();
+            } else {
+                showToast(data.error || 'Failed to add host', 'error');
+            }
+        }
+        
+        // ========================================================================
+        // Add DNS Zone
+        // ========================================================================
+        async function addDnsZone() {
+            if (!hasSudo) {
+                pendingSudoCallback = addDnsZone;
+                showModal('sudo-modal');
+                return;
+            }
+            
+            const name = document.getElementById('new-zone-name').value.trim();
+            const soa_ns = document.getElementById('new-zone-ns').value.trim();
+            const soa_email = document.getElementById('new-zone-email').value.trim();
+            const ttl = parseInt(document.getElementById('new-zone-ttl').value) || 86400;
+            
+            if (!name || !soa_ns || !soa_email) {
+                showToast('Please fill in all fields', 'error');
+                return;
+            }
+            
+            const res = await fetch('/api/dns/zone', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, soa_ns, soa_email, ttl })
+            });
+            
+            const data = await res.json();
+            
+            if (res.ok) {
+                showToast(t('zone_created'));
+                hideModal('add-zone-modal');
+                loadDNS();
+                loadStats();
+            } else {
+                showToast(data.error || 'Failed to create zone', 'error');
+            }
+        }
+        
+        // ========================================================================
+        // Add Network (placeholder)
+        // ========================================================================
+        async function addNetwork() {
+            showToast('Network configuration requires manual dhcpd.conf editing', 'error');
+            hideModal('add-network-modal');
+        }
+        
+        // ========================================================================
+        // Search & Filters
+        // ========================================================================
+        document.getElementById('dhcp-search').addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase();
+            document.querySelectorAll('#dhcp-table tbody tr').forEach(row => {
+                row.style.display = row.textContent.toLowerCase().includes(query) ? '' : 'none';
+            });
+        });
+        
+        document.getElementById('dns-search').addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase();
+            document.querySelectorAll('#dns-table tbody tr').forEach(row => {
+                row.style.display = row.textContent.toLowerCase().includes(query) ? '' : 'none';
+            });
+        });
+        
+        // Filter tabs
+        document.querySelectorAll('.filter-tabs').forEach(container => {
+            container.querySelectorAll('.filter-tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    container.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    
+                    const filter = tab.dataset.filter;
+                    const table = container.closest('.card').querySelector('tbody');
+                    
+                    table.querySelectorAll('tr').forEach(row => {
+                        if (filter === 'all') {
+                            row.style.display = '';
+                        } else if (filter === 'online') {
+                            row.style.display = row.dataset.online === 'true' ? '' : 'none';
+                        } else if (filter === 'offline') {
+                            row.style.display = row.dataset.online === 'false' ? '' : 'none';
+                        } else if (filter === 'active') {
+                            row.style.display = row.dataset.state === 'active' ? '' : 'none';
+                        }
+                    });
+                });
+            });
+        });
+        
+        // ========================================================================
+        // Settings
+        // ========================================================================
+        document.getElementById('save-settings-btn').addEventListener('click', async () => {
+            const settings = {
+                scan_interval: parseInt(document.getElementById('setting-scan-interval').value),
+                ping_timeout: parseInt(document.getElementById('setting-ping-timeout').value),
+                network: document.getElementById('setting-network').value,
+                max_threads: parseInt(document.getElementById('setting-max-threads').value)
+            };
+            
+            const res = await fetch('/api/config', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(settings)
+            });
+            
+            if (res.ok) {
+                showToast(t('settings_saved'));
+                loadConfig();
+            }
+        });
+        
+        // ========================================================================
+        // Pending Changes
+        // ========================================================================
+        let pendingChangesCount = 0;
+        
+        async function loadPendingChanges() {
+            const res = await fetch('/api/changes');
+            const data = await res.json();
+            pendingChangesCount = data.total;
+            
+            const btn = document.getElementById('activate-changes-btn');
+            const countSpan = document.getElementById('pending-count');
+            
+            if (pendingChangesCount > 0) {
+                btn.style.display = 'inline-flex';
+                countSpan.textContent = pendingChangesCount;
+            } else {
+                btn.style.display = 'none';
+            }
+        }
+        
+        document.getElementById('activate-changes-btn').addEventListener('click', async () => {
+            const res = await fetch('/api/changes/preview');
+            const preview = await res.json();
+            
+            const previewDiv = document.getElementById('changes-preview');
+            let html = '';
+            
+            if (preview.dhcp?.length) {
+                html += '<div style="margin-bottom: 1rem;"><strong>DHCP Changes:</strong></div>';
+                preview.dhcp.forEach(c => {
+                    const color = c.startsWith('+') ? 'var(--success)' : c.startsWith('-') ? 'var(--error)' : 'var(--warning)';
+                    html += `<div style="color: ${color}; margin-bottom: 0.25rem;">${c}</div>`;
+                });
+            }
+            
+            if (preview.dns?.length) {
+                html += '<div style="margin: 1rem 0;"><strong>DNS Changes:</strong></div>';
+                preview.dns.forEach(c => {
+                    const color = c.startsWith('+') ? 'var(--success)' : c.startsWith('-') ? 'var(--error)' : 'var(--warning)';
+                    html += `<div style="color: ${color}; margin-bottom: 0.25rem;">${c}</div>`;
+                });
+            }
+            
+            previewDiv.innerHTML = html || '<div style="color: var(--muted);">No pending changes</div>';
+            showModal('activate-modal');
+        });
+        
+        async function applyChanges() {
+            if (!hasSudo) {
+                pendingSudoCallback = applyChanges;
+                showModal('sudo-modal');
+                return;
+            }
+            
+            const res = await fetch('/api/changes/apply', { method: 'POST' });
+            const data = await res.json();
+            
+            hideModal('activate-modal');
+            
+            if (data.dhcp?.status === 'ok' || data.dns?.some(r => r.status === 'ok')) {
+                showToast(t('changes_applied'));
+                loadPendingChanges();
+                loadDHCP();
+                loadDNS();
+                loadStats();
+            } else {
+                showToast('Failed to apply some changes', 'error');
+            }
+        }
+        
+        async function discardChanges() {
+            await fetch('/api/changes/discard', { method: 'POST' });
+            hideModal('activate-modal');
+            showToast(t('changes_discarded'));
+            loadPendingChanges();
+        }
+        
+        // ========================================================================
+        // Edit/Delete DHCP
+        // ========================================================================
+        function editDhcpHost(hostname, mac, ip) {
+            document.getElementById('edit-host-original-name').value = hostname;
+            document.getElementById('edit-host-name').value = hostname;
+            document.getElementById('edit-host-mac').value = mac;
+            document.getElementById('edit-host-ip').value = ip;
+            showModal('edit-dhcp-modal');
+        }
+        
+        async function saveDhcpHost() {
+            const hostname = document.getElementById('edit-host-original-name').value;
+            const mac = document.getElementById('edit-host-mac').value.trim().toLowerCase();
+            const ip = document.getElementById('edit-host-ip').value.trim();
+            
+            const res = await fetch(`/api/dhcp/host/${encodeURIComponent(hostname)}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ mac, ip })
+            });
+            
+            if (res.ok) {
+                hideModal('edit-dhcp-modal');
+                showToast(t('change_staged'));
+                loadPendingChanges();
+            } else {
+                const data = await res.json();
+                showToast(data.error || 'Failed to edit host', 'error');
+            }
+        }
+        
+        async function deleteDhcpHost(hostname) {
+            if (!confirm(t('confirm_delete') + '\n\n' + hostname)) return;
+            
+            const res = await fetch(`/api/dhcp/host/${encodeURIComponent(hostname)}`, {
+                method: 'DELETE'
+            });
+            
+            if (res.ok) {
+                showToast(t('change_staged'));
+                loadPendingChanges();
+            } else {
+                const data = await res.json();
+                showToast(data.error || 'Failed to delete host', 'error');
+            }
+        }
+        
+        // ========================================================================
+        // Edit/Delete DNS
+        // ========================================================================
+        function editDnsRecord(zone, name, type, value) {
+            document.getElementById('edit-dns-zone').value = zone;
+            document.getElementById('edit-dns-original-name').value = name;
+            document.getElementById('edit-dns-original-type').value = type;
+            document.getElementById('edit-dns-name').value = name;
+            document.getElementById('edit-dns-type').value = type;
+            document.getElementById('edit-dns-value').value = value;
+            showModal('edit-dns-modal');
+        }
+        
+        async function saveDnsRecord() {
+            const zone = document.getElementById('edit-dns-zone').value;
+            const name = document.getElementById('edit-dns-original-name').value;
+            const type = document.getElementById('edit-dns-original-type').value;
+            const value = document.getElementById('edit-dns-value').value.trim();
+            
+            const res = await fetch(`/api/dns/zone/${encodeURIComponent(zone)}/record`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, type, value })
+            });
+            
+            if (res.ok) {
+                hideModal('edit-dns-modal');
+                showToast(t('change_staged'));
+                loadPendingChanges();
+            } else {
+                const data = await res.json();
+                showToast(data.error || 'Failed to edit record', 'error');
+            }
+        }
+        
+        async function deleteDnsRecord(zone, name, type) {
+            if (!confirm(t('confirm_delete') + '\n\n' + name + ' (' + type + ')')) return;
+            
+            const res = await fetch(`/api/dns/zone/${encodeURIComponent(zone)}/record/${encodeURIComponent(name)}/${encodeURIComponent(type)}`, {
+                method: 'DELETE'
+            });
+            
+            if (res.ok) {
+                showToast(t('change_staged'));
+                loadPendingChanges();
+            } else {
+                const data = await res.json();
+                showToast(data.error || 'Failed to delete record', 'error');
+            }
+        }
+        
+        // ========================================================================
+        // Initialize
+        // ========================================================================
+        async function init() {
+            // Set initial language button
+            document.querySelector(`.lang-btn[data-lang="${currentLang}"]`)?.classList.add('active');
+            document.querySelector(`.lang-btn:not([data-lang="${currentLang}"])`)?.classList.remove('active');
+            
+            applyTheme();
+            applyTranslations();
+            
+            await Promise.all([
+                loadUser(),
+                loadStats(),
+                loadDHCP(),
+                loadDNS(),
+                loadScan(),
+                loadLeases(),
+                loadNetworks(),
+                loadServices(),
+                loadConfig(),
+                loadHistory(),
+                loadPendingChanges()
+            ]);
+            
+            updateCharts();
+        }
+        
+        init();
+        
+        // Auto-refresh every 60 seconds
+        setInterval(async () => {
+            await loadStats();
+            await loadScan();
+        }, 60000);
+    </script>
+</body>
+</html>

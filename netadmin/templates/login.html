@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IntNetAdmin - Login</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        :root {
+            --bg: #0f172a;
+            --card: #1e293b;
+            --border: #334155;
+            --text: #f1f5f9;
+            --muted: #94a3b8;
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --error: #ef4444;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 50%, #1a1a2e 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+        
+        .login-container {
+            width: 100%;
+            max-width: 420px;
+        }
+        
+        .login-card {
+            background: var(--card);
+            border-radius: 20px;
+            padding: 2.5rem;
+            box-shadow: 0 25px 80px rgba(0,0,0,0.4);
+            border: 1px solid var(--border);
+        }
+        
+        .logo {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .logo svg {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 1rem;
+        }
+        
+        .logo h1 {
+            color: var(--text);
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .logo .slogan {
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+        
+        .form-group label {
+            display: block;
+            color: var(--muted);
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            border-radius: 10px;
+            border: 2px solid var(--border);
+            background: var(--bg);
+            color: var(--text);
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
+        }
+        
+        .form-group input::placeholder {
+            color: var(--muted);
+            opacity: 0.6;
+        }
+        
+        .submit-btn {
+            width: 100%;
+            padding: 1rem;
+            border-radius: 10px;
+            border: none;
+            background: linear-gradient(135deg, var(--primary), #8b5cf6);
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 0.5rem;
+        }
+        
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3);
+        }
+        
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+        
+        .error-message {
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid var(--error);
+            color: #fca5a5;
+            padding: 0.875rem 1rem;
+            border-radius: 10px;
+            margin-bottom: 1.25rem;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .pam-note {
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.75rem;
+            margin-top: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.375rem;
+        }
+        
+        .lang-switch {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 1.5rem;
+        }
+        
+        .lang-btn {
+            background: none;
+            border: 2px solid transparent;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.25rem;
+            border-radius: 6px;
+            opacity: 0.5;
+            transition: all 0.2s;
+        }
+        
+        .lang-btn:hover, .lang-btn.active {
+            opacity: 1;
+            border-color: var(--primary);
+        }
+        
+        .copyright {
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.7rem;
+            margin-top: 2rem;
+            opacity: 0.6;
+        }
+        
+        /* Animation */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .login-card {
+            animation: fadeIn 0.5s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-card">
+            <div class="logo">
+                <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#3b82f6"/>
+                            <stop offset="100%" style="stop-color:#8b5cf6"/>
+                        </linearGradient>
+                    </defs>
+                    <circle cx="50" cy="50" r="45" fill="url(#grad1)" opacity="0.2"/>
+                    <circle cx="50" cy="50" r="8" fill="url(#grad1)"/>
+                    <circle cx="50" cy="20" r="6" fill="url(#grad1)"/>
+                    <circle cx="80" cy="50" r="6" fill="url(#grad1)"/>
+                    <circle cx="50" cy="80" r="6" fill="url(#grad1)"/>
+                    <circle cx="20" cy="50" r="6" fill="url(#grad1)"/>
+                    <circle cx="75" cy="25" r="5" fill="url(#grad1)" opacity="0.7"/>
+                    <circle cx="75" cy="75" r="5" fill="url(#grad1)" opacity="0.7"/>
+                    <circle cx="25" cy="75" r="5" fill="url(#grad1)" opacity="0.7"/>
+                    <circle cx="25" cy="25" r="5" fill="url(#grad1)" opacity="0.7"/>
+                    <line x1="50" y1="50" x2="50" y2="20" stroke="url(#grad1)" stroke-width="2"/>
+                    <line x1="50" y1="50" x2="80" y2="50" stroke="url(#grad1)" stroke-width="2"/>
+                    <line x1="50" y1="50" x2="50" y2="80" stroke="url(#grad1)" stroke-width="2"/>
+                    <line x1="50" y1="50" x2="20" y2="50" stroke="url(#grad1)" stroke-width="2"/>
+                    <line x1="50" y1="50" x2="75" y2="25" stroke="url(#grad1)" stroke-width="1.5" opacity="0.7"/>
+                    <line x1="50" y1="50" x2="75" y2="75" stroke="url(#grad1)" stroke-width="1.5" opacity="0.7"/>
+                    <line x1="50" y1="50" x2="25" y2="75" stroke="url(#grad1)" stroke-width="1.5" opacity="0.7"/>
+                    <line x1="50" y1="50" x2="25" y2="25" stroke="url(#grad1)" stroke-width="1.5" opacity="0.7"/>
+                </svg>
+                <h1>IntNetAdmin</h1>
+                <p class="slogan" id="slogan">Manage your internal network with ease</p>
+            </div>
+            
+            {% if error %}
+            <div class="error-message">
+                <span>⚠️</span>
+                <span id="error-text">{{ error }}</span>
+            </div>
+            {% endif %}
+            
+            <form method="POST" action="/login">
+                <div class="form-group">
+                    <label for="username" id="label-username">Username</label>
+                    <input type="text" id="username" name="username" required autofocus placeholder="Enter your username">
+                </div>
+                <div class="form-group">
+                    <label for="password" id="label-password">Password</label>
+                    <input type="password" id="password" name="password" required placeholder="Enter your password">
+                </div>
+                <button type="submit" class="submit-btn" id="submit-btn">Sign In</button>
+            </form>
+            
+            <p class="pam-note">
+                <span>🔐</span>
+                <span id="pam-note-text">Authenticated via system PAM</span>
+            </p>
+            
+            <div class="lang-switch">
+                <button class="lang-btn active" data-lang="en" title="English">🇬🇧</button>
+                <button class="lang-btn" data-lang="sv" title="Svenska">🇸🇪</button>
+            </div>
+        </div>
+        
+        <p class="copyright">
+            © 2026 Daniel Nylander · Licensed under GPL-3.0
+        </p>
+    </div>
+    
+    <script>
+        const translations = {
+            en: {
+                slogan: 'Manage your internal network with ease',
+                username: 'Username',
+                password: 'Password',
+                signin: 'Sign In',
+                pam_note: 'Authenticated via system PAM',
+                invalid_credentials: 'Invalid credentials'
+            },
+            sv: {
+                slogan: 'Hantera ditt interna nätverk enkelt',
+                username: 'Användarnamn',
+                password: 'Lösenord',
+                signin: 'Logga in',
+                pam_note: 'Autentisering via system-PAM',
+                invalid_credentials: 'Ogiltiga uppgifter'
+            }
+        };
+        
+        let currentLang = localStorage.getItem('lang') || 'en';
+        
+        function applyTranslations() {
+            const t = translations[currentLang];
+            document.getElementById('slogan').textContent = t.slogan;
+            document.getElementById('label-username').textContent = t.username;
+            document.getElementById('label-password').textContent = t.password;
+            document.getElementById('submit-btn').textContent = t.signin;
+            document.getElementById('pam-note-text').textContent = t.pam_note;
+            
+            document.getElementById('username').placeholder = currentLang === 'sv' ? 'Ange ditt användarnamn' : 'Enter your username';
+            document.getElementById('password').placeholder = currentLang === 'sv' ? 'Ange ditt lösenord' : 'Enter your password';
+            
+            const errorText = document.getElementById('error-text');
+            if (errorText && errorText.textContent === 'Invalid credentials') {
+                errorText.textContent = t.invalid_credentials;
+            }
+        }
+        
+        document.querySelectorAll('.lang-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentLang = btn.dataset.lang;
+                localStorage.setItem('lang', currentLang);
+                applyTranslations();
+            });
+        });
+        
+        // Initialize
+        document.querySelector(`.lang-btn[data-lang="${currentLang}"]`)?.classList.add('active');
+        document.querySelector(`.lang-btn:not([data-lang="${currentLang}"])`)?.classList.remove('active');
+        applyTranslations();
+    </script>
+</body>
+</html>
