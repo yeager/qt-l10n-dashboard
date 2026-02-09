@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Qt Translation Dashboard</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+
+:root{
+  --qt-green:#41CD52;--qt-green-dark:#30a040;--qt-green-light:#5fd868;
+  --green:#41CD52;--yellow:#e6a817;--red:#e05252;--orange:#d4782a;
+}
+
+[data-theme="light"]{
+  --bg:#f8f9fa;--card:#ffffff;--border:#e0e3e7;--text:#1d1d1d;--text2:#6b7280;
+  --accent:#41CD52;--header-bg:linear-gradient(135deg,#41CD52 0%,#30a040 100%);
+  --header-text:#fff;--input-bg:#fff;--overlay-bg:rgba(248,249,250,.92);
+  --badge-bg:#f0fdf0;--hover-border:#41CD52;--shadow:0 1px 3px rgba(0,0,0,.08);
+  --card-hover-shadow:0 4px 12px rgba(65,205,82,.15);
+}
+[data-theme="dark"]{
+  --bg:#1d1d1d;--card:#2a2a2a;--border:#3a3a3a;--text:#e8e8e8;--text2:#9ca3af;
+  --accent:#41CD52;--header-bg:linear-gradient(135deg,#2d8f3a 0%,#1d6b28 100%);
+  --header-text:#fff;--input-bg:#333;--overlay-bg:rgba(29,29,29,.92);
+  --badge-bg:#1a3a1e;--hover-border:#41CD52;--shadow:0 1px 3px rgba(0,0,0,.3);
+  --card-hover-shadow:0 4px 12px rgba(65,205,82,.2);
+}
+
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,-apple-system,Helvetica,Arial,sans-serif;line-height:1.6;transition:background .3s,color .3s}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+
+.header{background:var(--header-bg);color:var(--header-text);padding:16px 24px;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+.header-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.header h1{font-size:22px;font-weight:700;letter-spacing:-.3px;display:flex;align-items:center;gap:10px}
+.header h1 .qt-logo{display:inline-flex;align-items:center;gap:6px;font-weight:800}
+.header h1 .qt-logo span{background:#fff;color:#41CD52;border-radius:4px;padding:1px 7px;font-size:18px;font-weight:900;letter-spacing:-.5px}
+.header-actions{display:flex;gap:8px;align-items:center}
+
+.theme-toggle{background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:6px;padding:5px 12px;cursor:pointer;font-size:14px;transition:.2s;display:flex;align-items:center;gap:4px}
+.theme-toggle:hover{background:rgba(255,255,255,.3)}
+
+.refresh-btn{padding:5px 12px;border-radius:6px;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.15);color:#fff;cursor:pointer;font-size:13px;transition:.2s}
+.refresh-btn:hover{background:rgba(255,255,255,.25)}
+.refresh-btn.loading{opacity:.5;cursor:wait}
+.data-source{font-size:11px;color:rgba(255,255,255,.7);margin-left:4px}
+.data-source.live{color:#c5ffc9}
+.data-source.cached{color:#ffe9a0}
+
+.ver-pills{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px}
+.ver-pill{padding:4px 14px;border-radius:20px;font-size:13px;cursor:pointer;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.1);color:rgba(255,255,255,.85);transition:.2s}
+.ver-pill:hover{background:rgba(255,255,255,.2)}
+.ver-pill.active{background:#fff;color:#1d6b28;border-color:#fff;font-weight:600}
+.ver-pill .pct{margin-left:4px;opacity:.7;font-size:11px}
+.ver-pill .tag{margin-left:4px;opacity:.6;font-size:10px;font-style:italic}
+
+.controls-bar{background:var(--card);border-bottom:1px solid var(--border);padding:10px 24px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;box-shadow:var(--shadow)}
+input[type=text],select{background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:7px 12px;font-size:14px;transition:border-color .2s}
+input[type=text]:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(65,205,82,.15)}
+input[type=text]{width:220px}
+select{cursor:pointer}
+
+.stats{display:flex;gap:16px;margin-left:auto;font-size:13px;color:var(--text2);flex-wrap:wrap}
+.stats b{color:var(--text)}
+
+.btn{padding:5px 14px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--text);cursor:pointer;font-size:13px;transition:.2s}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+.your-lang{background:var(--accent);color:#fff;padding:3px 10px;border-radius:4px;font-size:12px;cursor:pointer;white-space:nowrap;font-weight:600}
+
+.view-tabs{display:flex;gap:4px}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:14px;padding:20px 24px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;transition:all .25s;box-shadow:var(--shadow)}
+.card:hover{border-color:var(--hover-border);box-shadow:var(--card-hover-shadow);transform:translateY(-1px)}
+.card.highlight{border-color:var(--accent);box-shadow:0 0 12px rgba(65,205,82,.25)}
+.card-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.lang-code{font-size:18px;font-weight:700}
+.lang-name{font-size:13px;color:var(--text2);margin-left:6px}
+.avg-badge{font-size:14px;font-weight:700;padding:3px 12px;border-radius:12px;min-width:48px;text-align:center}
+.bar-wrap{height:6px;background:var(--border);border-radius:3px;margin-bottom:12px;overflow:hidden}
+.bar-fill{height:100%;border-radius:3px;transition:width .4s ease}
+.modules{display:flex;flex-wrap:wrap;gap:5px}
+.mod{font-size:12px;padding:3px 8px;border-radius:5px;cursor:pointer;border:1px solid transparent;transition:.15s;white-space:nowrap;font-weight:500}
+.mod:hover{border-color:var(--accent);transform:translateY(-1px)}
+.mod.na{opacity:.35;cursor:default}
+.mod.na:hover{border-color:transparent;transform:none}
+
+.heatmap-container{padding:20px 24px;display:none}
+.heatmap-container.show{display:block}
+.heatmap{display:grid;gap:2px;font-size:11px}
+.hm-cell{width:100%;aspect-ratio:1;border-radius:3px;display:flex;align-items:center;justify-content:center;font-weight:600;cursor:default;min-height:20px}
+.hm-label{font-size:11px;color:var(--text2);text-align:right;padding-right:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hm-header{font-size:10px;color:var(--text2);text-align:center;writing-mode:vertical-lr;transform:rotate(180deg);height:60px;overflow:hidden}
+
+.compare-container{padding:20px 24px;display:none}
+.compare-container.show{display:block}
+.compare-table{width:100%;border-collapse:collapse;font-size:13px}
+.compare-table th,.compare-table td{padding:8px 12px;border:1px solid var(--border);text-align:center}
+.compare-table th{background:var(--card);position:sticky;top:96px;font-weight:600}
+.compare-table tr:hover td{background:var(--badge-bg)}
+.compare-table .up{color:var(--green);font-weight:600}
+.compare-table .down{color:var(--red);font-weight:600}
+.compare-table .same{color:var(--text2)}
+.compare-table .lang-col{text-align:left;font-weight:600}
+
+.loading-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:var(--overlay-bg);display:flex;align-items:center;justify-content:center;z-index:1000;flex-direction:column;gap:16px}
+.loading-overlay .spinner{width:44px;height:44px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
+.loading-overlay .load-text{color:var(--text2);font-size:15px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+@media(max-width:600px){
+.grid{grid-template-columns:1fr;padding:12px}
+.header{padding:12px 14px}
+.controls-bar{padding:8px 14px}
+input[type=text]{width:100%}
+.controls-bar{flex-direction:column;align-items:stretch}
+.ver-pills{justify-content:center}
+.stats{margin-left:0}
+}
+</style>
+</head>
+<body>
+<div id="loadingOverlay" class="loading-overlay">
+<div class="spinner"></div>
+<div class="load-text">Loading translation data…</div>
+</div>
+
+<div class="header">
+<div class="header-top">
+<h1><span class="qt-logo"><span>Qt</span></span> Translation Dashboard
+<button class="refresh-btn" id="refreshBtn" onclick="refreshData()" title="Fetch latest data from l10n-files.qt.io">⟳ Refresh</button>
+<span class="data-source" id="dataSource"></span>
+</h1>
+<div class="header-actions">
+<span id="yourLang"></span>
+<button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle dark/light theme">🌙 Dark</button>
+</div>
+</div>
+<div class="ver-pills" id="verPills"></div>
+</div>
+
+<div class="controls-bar">
+<input type="text" id="search" placeholder="🔍 Search language…">
+<select id="sortBy"><option value="code">Sort: Code</option><option value="pct-desc">Sort: Best first</option><option value="pct-asc">Sort: Worst first</option></select>
+<div class="view-tabs">
+<button class="btn active" onclick="setView('cards')">Cards</button>
+<button class="btn" onclick="setView('heatmap')">Heatmap</button>
+<button class="btn" onclick="setView('compare')">Compare</button>
+</div>
+<div class="stats" id="stats"></div>
+</div>
+
+<div class="grid" id="grid"></div>
+<div class="heatmap-container" id="heatmapView"></div>
+<div class="compare-container" id="compareView"></div>
+
+<script>
+// ── Theme ──
+function initTheme(){
+  const saved = localStorage.getItem('qt-dash-theme');
+  const theme = saved || 'light';
+  document.documentElement.setAttribute('data-theme', theme);
+  updateThemeBtn(theme);
+}
+function toggleTheme(){
+  const cur = document.documentElement.getAttribute('data-theme');
+  const next = cur === 'light' ? 'dark' : 'light';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('qt-dash-theme', next);
+  updateThemeBtn(next);
+}
+function updateThemeBtn(theme){
+  const btn = document.getElementById('themeToggle');
+  btn.textContent = theme === 'light' ? '🌙 Dark' : '☀️ Light';
+}
+initTheme();
+
+const BASE = 'https://l10n-files.qt.io/l10n-files/';
+const LANG_NAMES = {
+  ar:'Arabic',bg:'Bulgarian',ca:'Catalan',cs:'Czech',da:'Danish',de:'German',
+  en:'English',es:'Spanish',fa:'Persian',fi:'Finnish',fr:'French',gd:'Scottish Gaelic',
+  gl:'Galician',he:'Hebrew',hr:'Croatian',hu:'Hungarian',it:'Italian',ja:'Japanese',
+  ka:'Georgian',ko:'Korean',lg:'Ganda',lt:'Lithuanian',lv:'Latvian',nl:'Dutch',
+  nn:'Norwegian Nynorsk',pl:'Polish',pt_BR:'Portuguese (Brazil)',pt_PT:'Portuguese (Portugal)',
+  ro:'Romanian',ru:'Russian',sk:'Slovak',sl:'Slovenian',sq:'Albanian',sv:'Swedish',
+  ta:'Tamil',th:'Thai',tr:'Turkish',uk:'Ukrainian',vi:'Vietnamese',
+  zh_CN:'Chinese (Simplified)',zh_TW:'Chinese (Traditional)'
+};
+
+const CORS_PROXIES = [
+  url => url,
+  url => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url),
+  url => 'https://corsproxy.io/?' + encodeURIComponent(url),
+];
+
+let VERSIONS = [];
+let DATA = {};
+let currentVer = '';
+let currentView = 'cards';
+let searchTerm = '';
+let sortMode = 'code';
+
+function parseL10nPage(html) {
+  const versions = [];
+  const data = {};
+  const text = html
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&nbsp;/g, ' ').replace(/&#\d+;/g, ' ');
+
+  const sectionRegex = /\n\s*(Qt Creator \d+\.\d+|Qt Installer Framework \d+\.\d+|Qt \d+\.\d+)\s*\n/g;
+  const matches = [];
+  let match;
+  while ((match = sectionRegex.exec(text)) !== null) {
+    matches.push({ title: match[1].trim(), index: match.index + match[0].length });
+  }
+  const sections = [];
+  for (let i = 0; i < matches.length; i++) {
+    const start = matches[i].index;
+    const end = i + 1 < matches.length ? matches[i + 1].index : text.length;
+    sections.push({ title: matches[i].title, body: text.substring(start, end) });
+  }
+
+  for (const section of sections) {
+    const title = section.title;
+    const body = section.body;
+    let id, name, tag, type, base;
+
+    if (title.startsWith('Qt Creator')) {
+      const ver = title.replace('Qt Creator ', '');
+      id = 'qtcreator-' + ver.replace('.', '');
+      name = title; type = 'creator'; base = 'qtcreator-' + ver.replace('.', '') + '/';
+      tag = /under active development/i.test(body) ? 'Dev' : /stable/i.test(body) ? 'Stable' : '';
+    } else if (title.startsWith('Qt Installer Framework')) {
+      const ver = title.replace('Qt Installer Framework ', '');
+      id = 'ifw-' + ver.replace('.', '');
+      name = 'IFW ' + ver; type = 'ifw'; base = 'ifw-' + ver.replace('.', '') + '/';
+      tag = /stable/i.test(body) ? 'Stable' : '';
+    } else {
+      const ver = title.replace('Qt ', '');
+      if (ver === '5.15') { id = 'qt-old515'; base = 'qt-old515/'; }
+      else { id = 'qt-' + ver.replace('.', ''); base = 'qt-' + ver.replace('.', '') + '/'; }
+      name = title; type = 'qt';
+      tag = /old stable/i.test(body) ? 'Old stable' : /long term supported/i.test(body) ? 'LTS' :
+        /strings are hard-frozen|strings frozen/i.test(body) ? 'Strings frozen' :
+        /stable/i.test(body) ? 'Stable' : /development/i.test(body) ? 'Dev' : '';
+    }
+
+    versions.push({ id, name, tag, base, type });
+    data[id] = {};
+
+    if (type === 'creator' || type === 'ifw') {
+      const langRegex = /\b([a-z]{2}(?:_[A-Z]{2})?)\s*\((\d+|n\/a)%?\)/g;
+      let m;
+      while ((m = langRegex.exec(body)) !== null) {
+        const lang = m[1], val = m[2] === 'n/a' ? -1 : parseInt(m[2]);
+        data[id][lang] = type === 'creator' ? { qtcreator: val } : { ifw: val };
+      }
+    } else {
+      for (const line of body.split('\n')) {
+        const lineMatch = line.match(/^\s*([a-z]{2}(?:_[A-Z]{2})?)\s*:\s*(.+)/);
+        if (!lineMatch) continue;
+        const lang = lineMatch[1], rest = lineMatch[2], mods = {};
+        const modRegex = /(\w+)\s*\((\d+|n\/a)%?\)/g;
+        let mm;
+        while ((mm = modRegex.exec(rest)) !== null) {
+          if (mm[1] === 'Template' || mm[1] === 'Templates') continue;
+          mods[mm[1]] = mm[2] === 'n/a' ? -1 : parseInt(mm[2]);
+        }
+        if (Object.keys(mods).length > 0) data[id][lang] = mods;
+      }
+    }
+  }
+  return { versions, data };
+}
+
+async function fetchHTML() {
+  for (const proxyFn of CORS_PROXIES) {
+    try {
+      const url = proxyFn(BASE);
+      const resp = await fetch(url, { signal: AbortSignal.timeout(10000) });
+      if (!resp.ok) continue;
+      const html = await resp.text();
+      if (html.length < 1000) continue;
+      return { html, live: true };
+    } catch (e) { continue; }
+  }
+  return null;
+}
+
+async function loadData() {
+  const overlay = document.getElementById('loadingOverlay');
+  const result = await fetchHTML();
+  if (result) {
+    const parsed = parseL10nPage(result.html);
+    VERSIONS = parsed.versions; DATA = parsed.data;
+    try { localStorage.setItem('qt-l10n-data', JSON.stringify({ versions: VERSIONS, data: DATA, ts: Date.now() })); } catch(e) {}
+    showDataSource(true);
+  } else {
+    try {
+      const cached = JSON.parse(localStorage.getItem('qt-l10n-data'));
+      if (cached?.versions?.length) { VERSIONS = cached.versions; DATA = cached.data; showDataSource(false, cached.ts); }
+      else { document.getElementById('grid').innerHTML = '<div style="padding:24px;color:var(--red)">Failed to load data. Try refreshing.</div>'; overlay.style.display = 'none'; return; }
+    } catch(e) { document.getElementById('grid').innerHTML = '<div style="padding:24px;color:var(--red)">Failed to load data and no cache available.</div>'; overlay.style.display = 'none'; return; }
+  }
+  const qtVersions = VERSIONS.filter(v => v.type === 'qt');
+  const frozen = qtVersions.find(v => /frozen/i.test(v.tag));
+  currentVer = frozen ? frozen.id : (qtVersions.length ? qtVersions[qtVersions.length - 1].id : VERSIONS[0]?.id || '');
+  initUI();
+  overlay.style.display = 'none';
+}
+
+function showDataSource(live, ts) {
+  const el = document.getElementById('dataSource');
+  if (live) { el.textContent = '● Live data'; el.className = 'data-source live'; }
+  else { el.textContent = '● Cached (' + (ts ? new Date(ts).toLocaleString() : '?') + ')'; el.className = 'data-source cached'; }
+}
+
+async function refreshData() {
+  const btn = document.getElementById('refreshBtn');
+  btn.classList.add('loading'); btn.textContent = '⟳ Loading…';
+  const result = await fetchHTML();
+  if (result) {
+    const parsed = parseL10nPage(result.html);
+    VERSIONS = parsed.versions; DATA = parsed.data;
+    try { localStorage.setItem('qt-l10n-data', JSON.stringify({ versions: VERSIONS, data: DATA, ts: Date.now() })); } catch(e) {}
+    showDataSource(true); renderPills(); render();
+  } else { alert('Failed to fetch. CORS may be blocking.'); }
+  btn.classList.remove('loading'); btn.textContent = '⟳ Refresh';
+}
+
+function getAvg(mods) { const v = Object.values(mods).filter(x => x >= 0); return v.length ? Math.round(v.reduce((a, b) => a + b, 0) / v.length) : 0; }
+
+function pctColor(v) {
+  if (v >= 90) return 'var(--green)';
+  if (v >= 70) return 'var(--qt-green-dark)';
+  if (v >= 40) return 'var(--yellow)';
+  if (v >= 1) return 'var(--orange)';
+  return 'var(--red)';
+}
+function pctBg(v) {
+  if (v >= 90) return 'rgba(65,205,82,.12)';
+  if (v >= 70) return 'rgba(65,205,82,.08)';
+  if (v >= 40) return 'rgba(230,168,23,.12)';
+  if (v >= 1) return 'rgba(212,120,42,.12)';
+  return 'rgba(224,82,82,.12)';
+}
+function heatColor(v) {
+  if (v < 0) return 'var(--border)';
+  if (v === 0) return 'rgba(224,82,82,.4)';
+  const r = Math.round(224 - (224 - 65) * (v / 100));
+  const g = Math.round(82 + (205 - 82) * (v / 100));
+  const b = Math.round(82 - 30 + 30 * (v / 100));
+  return `rgba(${r},${g},${b},0.5)`;
+}
+
+function getTsUrl(ver, lang, mod) {
+  const v = VERSIONS.find(x => x.id === ver);
+  if (!v) return '#';
+  if (v.type === 'creator') return BASE + v.base + 'qtcreator_' + lang + '.ts';
+  if (v.type === 'ifw') return BASE + v.base + 'ifw_' + lang + '.ts';
+  return BASE + v.base + lang + '/' + mod + '_' + lang + '.ts';
+}
+
+function versionAvg(vid) {
+  const d = DATA[vid]; if (!d) return 0;
+  const avgs = Object.values(d).map(m => getAvg(m));
+  return avgs.length ? Math.round(avgs.reduce((a, b) => a + b, 0) / avgs.length) : 0;
+}
+
+function renderPills() {
+  document.getElementById('verPills').innerHTML = VERSIONS.map(v =>
+    `<div class="ver-pill${v.id === currentVer ? ' active' : ''}" onclick="setVersion('${v.id}')">${v.name}${v.tag ? ' <span class="tag">' + v.tag + '</span>' : ''} <span class="pct">${versionAvg(v.id)}%</span></div>`
+  ).join('');
+}
+
+function setVersion(id) { currentVer = id; renderPills(); render(); }
+function setView(v) {
+  currentView = v;
+  document.querySelectorAll('.view-tabs .btn').forEach((b, i) => b.classList.toggle('active', ['cards', 'heatmap', 'compare'][i] === v));
+  render();
+}
+
+function render() {
+  const d = DATA[currentVer] || {};
+  let langs = Object.keys(d);
+  const q = searchTerm.toLowerCase();
+  if (q) langs = langs.filter(l => (l + ' ' + (LANG_NAMES[l] || '')).toLowerCase().includes(q));
+  const avgMap = {};
+  langs.forEach(l => avgMap[l] = getAvg(d[l]));
+  if (sortMode === 'pct-desc') langs.sort((a, b) => avgMap[b] - avgMap[a]);
+  else if (sortMode === 'pct-asc') langs.sort((a, b) => avgMap[a] - avgMap[b]);
+  else langs.sort();
+
+  const allLangs = Object.keys(d);
+  const totalMods = allLangs.reduce((s, l) => s + Object.keys(d[l]).length, 0);
+  const perfect = allLangs.filter(l => getAvg(d[l]) === 100).length;
+  document.getElementById('stats').innerHTML = `<span><b>${allLangs.length}</b> languages</span><span><b>${totalMods}</b> modules</span><span><b>${perfect}</b> at 100%</span>`;
+
+  document.getElementById('grid').style.display = currentView === 'cards' ? '' : 'none';
+  document.getElementById('heatmapView').className = 'heatmap-container' + (currentView === 'heatmap' ? ' show' : '');
+  document.getElementById('compareView').className = 'compare-container' + (currentView === 'compare' ? ' show' : '');
+
+  if (currentView === 'cards') renderCards(langs, d);
+  else if (currentView === 'heatmap') renderHeatmap(langs, d);
+  else renderCompare(langs);
+}
+
+function renderCards(langs, d) {
+  const grid = document.getElementById('grid');
+  const userLang = detectLang();
+  grid.innerHTML = langs.map(lang => {
+    const mods = d[lang], avg = getAvg(mods), isUser = lang === userLang;
+    const modsHtml = Object.entries(mods).map(([mod, val]) => {
+      const na = val < 0;
+      const col = na ? '' : 'background:' + pctBg(val) + ';color:' + pctColor(val);
+      if (na) return `<span class="mod na">${mod} n/a</span>`;
+      return `<a class="mod" style="${col}" href="${getTsUrl(currentVer, lang, mod)}" title="Download ${mod}_${lang}.ts (${val}%)" target="_blank">${mod} ${val}%</a>`;
+    }).join('');
+    return `<div class="card${isUser ? ' highlight' : ''}" id="lang-${lang}">
+<div class="card-head"><div><span class="lang-code">${lang}</span><span class="lang-name">${LANG_NAMES[lang] || ''}</span></div><span class="avg-badge" style="background:${pctBg(avg)};color:${pctColor(avg)}">${avg}%</span></div>
+<div class="bar-wrap"><div class="bar-fill" style="width:${avg}%;background:${pctColor(avg)}"></div></div>
+<div class="modules">${modsHtml}</div></div>`;
+  }).join('');
+}
+
+function renderHeatmap(langs, d) {
+  const c = document.getElementById('heatmapView');
+  const allMods = new Set();
+  Object.values(d).forEach(m => Object.keys(m).forEach(k => allMods.add(k)));
+  const mods = [...allMods].sort();
+  let html = `<div class="heatmap" style="grid-template-columns:80px repeat(${mods.length},1fr)"><div></div>`;
+  mods.forEach(m => html += `<div class="hm-header">${m}</div>`);
+  langs.forEach(lang => {
+    html += `<div class="hm-label">${lang}</div>`;
+    mods.forEach(mod => {
+      const v = (d[lang] || {})[mod], val = v === undefined ? -2 : v;
+      const bg = val === -2 ? 'transparent' : heatColor(val);
+      const txt = val === -2 ? '' : val < 0 ? 'n/a' : val + '%';
+      html += `<div class="hm-cell" style="background:${bg}" title="${lang} / ${mod}: ${txt}">${val >= 0 && val <= 100 ? val : ''}</div>`;
+    });
+  });
+  c.innerHTML = html + '</div>';
+}
+
+function renderCompare(langs) {
+  const c = document.getElementById('compareView');
+  const qtVers = VERSIONS.filter(v => v.type === 'qt');
+  let html = `<table class="compare-table"><thead><tr><th class="lang-col">Language</th>`;
+  qtVers.forEach(v => html += `<th>${v.name}</th>`);
+  if (qtVers.length >= 2) { const l2 = qtVers.slice(-2); html += `<th>Δ ${l2[0].name}→${l2[1].name}</th>`; }
+  html += `</tr></thead><tbody>`;
+  const allLangs = new Set();
+  qtVers.forEach(v => Object.keys(DATA[v.id] || {}).forEach(l => allLangs.add(l)));
+  let sortedLangs = [...allLangs].sort();
+  const q = searchTerm.toLowerCase();
+  if (q) sortedLangs = sortedLangs.filter(l => (l + ' ' + (LANG_NAMES[l] || '')).toLowerCase().includes(q));
+  sortedLangs.forEach(lang => {
+    html += `<tr><td class="lang-col">${lang} <small style="color:var(--text2)">${LANG_NAMES[lang] || ''}</small></td>`;
+    const avgs = [];
+    qtVers.forEach(v => {
+      const d = (DATA[v.id] || {})[lang], avg = d ? getAvg(d) : null;
+      avgs.push(avg);
+      html += `<td style="color:${avg !== null ? pctColor(avg) : 'var(--text2)'}">${avg !== null ? avg + '%' : '-'}</td>`;
+    });
+    if (qtVers.length >= 2) {
+      const a = avgs[avgs.length - 2], b = avgs[avgs.length - 1];
+      if (a !== null && b !== null) { const delta = b - a; html += `<td class="${delta > 0 ? 'up' : delta < 0 ? 'down' : 'same'}">${delta > 0 ? '+' : ''}${delta}</td>`; }
+      else html += `<td>-</td>`;
+    }
+    html += `</tr>`;
+  });
+  c.innerHTML = html + `</tbody></table>`;
+}
+
+function detectLang() {
+  const code = (navigator.language || '').replace('-', '_');
+  for (const v of Object.values(DATA)) { if (v[code]) return code; }
+  const base = code.split('_')[0];
+  for (const v of Object.values(DATA)) { if (v[base]) return base; }
+  return null;
+}
+
+function initUI() {
+  renderPills(); render();
+  const ul = detectLang();
+  if (ul) document.getElementById('yourLang').innerHTML = `<span class="your-lang" onclick="jumpToLang('${ul}')">📍 ${LANG_NAMES[ul] || ul}</span>`;
+}
+
+function jumpToLang(code) {
+  searchTerm = ''; document.getElementById('search').value = '';
+  currentView = 'cards';
+  document.querySelectorAll('.view-tabs .btn').forEach((b, i) => b.classList.toggle('active', i === 0));
+  render();
+  setTimeout(() => { const el = document.getElementById('lang-' + code); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 100);
+}
+
+document.getElementById('search').addEventListener('input', e => { searchTerm = e.target.value; render(); });
+document.getElementById('sortBy').addEventListener('change', e => { sortMode = e.target.value; render(); });
+
+loadData();
+</script>
+</body>
+</html>
