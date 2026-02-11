@@ -151,6 +151,7 @@ input[type=text]{width:100%}
 <button class="btn" onclick="setView('compare')">Compare</button>
 </div>
 <div class="stats" id="stats"></div>
+<div class="templates-bar" id="templatesBar" style="padding:4px 24px;font-size:12px;color:var(--text2)"></div>
 </div>
 
 <div class="grid" id="grid"></div>
@@ -402,7 +403,15 @@ function getTsUrl(ver, lang, mod) {
   if (!v) return '#';
   if (v.type === 'creator') return BASE + v.base + 'qtcreator_' + lang + '.ts';
   if (v.type === 'ifw') return BASE + v.base + 'ifw_' + lang + '.ts';
-  return BASE + v.base + lang + '/' + mod + '_' + lang + '.ts';
+  return BASE + v.base + mod + '_' + lang + '.ts';
+}
+
+function getTemplateUrl(ver, mod) {
+  const v = VERSIONS.find(x => x.id === ver);
+  if (!v) return '#';
+  if (v.type === 'creator') return BASE + v.base + 'qtcreator_untranslated.ts';
+  if (v.type === 'ifw') return BASE + v.base + 'ifw_untranslated.ts';
+  return BASE + v.base + mod + '_untranslated.ts';
 }
 
 function versionAvg(vid) {
@@ -439,6 +448,17 @@ function render() {
   const totalMods = allLangs.reduce((s, l) => s + Object.keys(d[l]).length, 0);
   const perfect = allLangs.filter(l => getAvg(d[l]) === 100).length;
   document.getElementById('stats').innerHTML = `<span><b>${allLangs.length}</b> languages</span><span><b>${totalMods}</b> modules</span><span><b>${perfect}</b> at 100%</span>`;
+
+  // Render template download links
+  const v = VERSIONS.find(x => x.id === currentVer);
+  if (v) {
+    const mods = new Set();
+    allLangs.forEach(l => Object.keys(d[l]).forEach(m => mods.add(m)));
+    const tplLinks = [...mods].sort().map(m =>
+      `<a href="${getTemplateUrl(currentVer, m)}" target="_blank" style="color:var(--accent);text-decoration:none;margin-right:8px" title="Download ${m} template">${m}</a>`
+    ).join('');
+    document.getElementById('templatesBar').innerHTML = tplLinks ? `📋 Templates: ${tplLinks}` : '';
+  }
 
   document.getElementById('grid').style.display = currentView === 'cards' ? '' : 'none';
   document.getElementById('heatmapView').className = 'heatmap-container' + (currentView === 'heatmap' ? ' show' : '');
