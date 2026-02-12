@@ -9,15 +9,17 @@
 
 :root{
   --qt-green:#41CD52;--qt-green-dark:#30a040;--qt-green-light:#5fd868;
+  --qt-neon:#2CDE85;--qt-pine:#00414A;
   --green:#41CD52;--yellow:#e6a817;--red:#e05252;--orange:#d4782a;
 }
 
 [data-theme="light"]{
-  --bg:#f8f9fa;--card:#ffffff;--border:#e0e3e7;--text:#1d1d1d;--text2:#6b7280;
-  --accent:#41CD52;--header-bg:linear-gradient(135deg,#41CD52 0%,#30a040 100%);
-  --header-text:#fff;--input-bg:#fff;--overlay-bg:rgba(248,249,250,.92);
-  --badge-bg:#f0fdf0;--hover-border:#41CD52;--shadow:0 1px 3px rgba(0,0,0,.08);
-  --card-hover-shadow:0 4px 12px rgba(65,205,82,.15);
+  --bg:#ffffff;--card:#ffffff;--border:#c4cdd5;--text:#00414A;--text2:#4a6068;
+  --accent:#2CDE85;--header-bg:linear-gradient(135deg,#00414A 0%,#005a66 100%);
+  --header-text:#fff;--input-bg:#f6f8f9;--overlay-bg:rgba(255,255,255,.94);
+  --badge-bg:#e8faf0;--hover-border:#2CDE85;--shadow:0 1px 3px rgba(0,65,74,.1);
+  --card-hover-shadow:0 4px 16px rgba(0,65,74,.12);
+  --control-bg:#f0f4f6;--stats-bg:#e8faf0;
 }
 [data-theme="dark"]{
   --bg:#1d1d1d;--card:#2a2a2a;--border:#3a3a3a;--text:#e8e8e8;--text2:#9ca3af;
@@ -25,68 +27,92 @@
   --header-text:#fff;--input-bg:#333;--overlay-bg:rgba(29,29,29,.92);
   --badge-bg:#1a3a1e;--hover-border:#41CD52;--shadow:0 1px 3px rgba(0,0,0,.3);
   --card-hover-shadow:0 4px 12px rgba(65,205,82,.2);
+  --control-bg:#2a2a2a;--stats-bg:#1a3a1e;
 }
 
 body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,-apple-system,Helvetica,Arial,sans-serif;line-height:1.6;transition:background .3s,color .3s}
-a{color:var(--accent);text-decoration:none}
+a{color:var(--qt-pine);text-decoration:none}
+[data-theme="dark"] a{color:var(--accent)}
 a:hover{text-decoration:underline}
 
 .header{background:var(--header-bg);color:var(--header-text);padding:16px 24px;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.15)}
 .header-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
 .header h1{font-size:22px;font-weight:700;letter-spacing:-.3px;display:flex;align-items:center;gap:10px}
 .header h1 .qt-logo{display:inline-flex;align-items:center;gap:6px;font-weight:800}
-.header h1 .qt-logo span{background:#fff;color:#41CD52;border-radius:4px;padding:1px 7px;font-size:18px;font-weight:900;letter-spacing:-.5px}
+.header h1 .qt-logo span{background:#2CDE85;color:#00414A;border-radius:4px;padding:1px 7px;font-size:18px;font-weight:900;letter-spacing:-.5px}
 .header-actions{display:flex;gap:8px;align-items:center}
 
-.theme-toggle{background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:6px;padding:5px 12px;cursor:pointer;font-size:14px;transition:.2s;display:flex;align-items:center;gap:4px}
-.theme-toggle:hover{background:rgba(255,255,255,.3)}
+.theme-toggle{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:6px;padding:5px 12px;cursor:pointer;font-size:14px;transition:.2s;display:flex;align-items:center;gap:4px}
+.theme-toggle:hover{background:rgba(255,255,255,.25)}
 
-.refresh-btn{padding:5px 12px;border-radius:6px;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.15);color:#fff;cursor:pointer;font-size:13px;transition:.2s}
-.refresh-btn:hover{background:rgba(255,255,255,.25)}
+.refresh-btn{padding:5px 12px;border-radius:6px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.1);color:#fff;cursor:pointer;font-size:13px;transition:.2s}
+.refresh-btn:hover{background:rgba(255,255,255,.2)}
 .refresh-btn.loading{opacity:.5;cursor:wait}
 .data-source{font-size:11px;color:rgba(255,255,255,.7);margin-left:4px}
-.data-source.live{color:#c5ffc9}
+.data-source.live{color:#a0ffb0}
 .data-source.cached{color:#ffe9a0}
 
-.ver-pills{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px}
+.ver-pills{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:4px}
 .ver-pill{padding:4px 14px;border-radius:20px;font-size:13px;cursor:pointer;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.1);color:rgba(255,255,255,.85);transition:.2s}
 .ver-pill:hover{background:rgba(255,255,255,.2)}
-.ver-pill.active{background:#fff;color:#1d6b28;border-color:#fff;font-weight:600}
+.ver-pill.active{background:#2CDE85;color:#00414A;border-color:#2CDE85;font-weight:600}
 .ver-pill .pct{margin-left:4px;opacity:.7;font-size:11px}
 .ver-pill .tag{margin-left:4px;opacity:.6;font-size:10px;font-style:italic}
 
-.controls-bar{background:var(--card);border-bottom:1px solid var(--border);padding:10px 24px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;box-shadow:var(--shadow)}
-input[type=text],select{background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:7px 12px;font-size:14px;transition:border-color .2s}
-input[type=text]:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(65,205,82,.15)}
+.controls-bar{background:var(--control-bg);border-bottom:2px solid var(--border);padding:10px 24px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+input[type=text],select{background:var(--input-bg);color:var(--text);border:1.5px solid var(--border);border-radius:6px;padding:7px 12px;font-size:14px;transition:border-color .2s}
+input[type=text]:focus,select:focus{outline:none;border-color:var(--qt-pine);box-shadow:0 0 0 3px rgba(0,65,74,.1)}
+[data-theme="dark"] input[type=text]:focus,[data-theme="dark"] select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(65,205,82,.15)}
 input[type=text]{width:220px}
 select{cursor:pointer}
 
-.stats{display:flex;gap:16px;margin-left:auto;font-size:13px;color:var(--text2);flex-wrap:wrap}
-.stats b{color:var(--text)}
+.stats{display:flex;gap:6px;margin-left:auto;font-size:12px;flex-wrap:wrap;align-items:center}
+.stat-chip{background:var(--stats-bg);border:1px solid var(--border);border-radius:16px;padding:3px 12px;display:flex;align-items:center;gap:4px;white-space:nowrap}
+.stat-chip b{color:var(--text);font-weight:700}
+.stat-chip span{color:var(--text2)}
 
-.btn{padding:5px 14px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--text);cursor:pointer;font-size:13px;transition:.2s}
-.btn:hover{border-color:var(--accent);color:var(--accent)}
-.btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn{padding:5px 14px;border-radius:6px;border:1.5px solid var(--border);background:var(--card);color:var(--text);cursor:pointer;font-size:13px;transition:.2s;font-weight:500}
+.btn:hover{border-color:var(--qt-pine);color:var(--qt-pine)}
+[data-theme="dark"] .btn:hover{border-color:var(--accent);color:var(--accent)}
+.btn.active{background:var(--qt-pine);color:#fff;border-color:var(--qt-pine)}
+[data-theme="dark"] .btn.active{background:var(--accent);color:#000;border-color:var(--accent)}
 
 .your-lang{background:var(--accent);color:#fff;padding:3px 10px;border-radius:4px;font-size:12px;cursor:pointer;white-space:nowrap;font-weight:600}
 
 .view-tabs{display:flex;gap:4px}
 
+/* Compare version picker */
+.compare-ver-picker{display:none;gap:6px;align-items:center;flex-wrap:wrap;padding:10px 24px;background:var(--control-bg);border-bottom:1px solid var(--border)}
+.compare-ver-picker.show{display:flex}
+.compare-ver-picker label{font-size:13px;font-weight:600;color:var(--text);margin-right:4px}
+.compare-ver-chip{padding:3px 12px;border-radius:16px;font-size:12px;cursor:pointer;border:1.5px solid var(--border);background:var(--card);color:var(--text);transition:.2s;user-select:none}
+.compare-ver-chip:hover{border-color:var(--qt-pine)}
+.compare-ver-chip.selected{background:var(--qt-pine);color:#fff;border-color:var(--qt-pine)}
+[data-theme="dark"] .compare-ver-chip.selected{background:var(--accent);color:#000;border-color:var(--accent)}
+
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:14px;padding:20px 24px}
-.card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;transition:all .25s;box-shadow:var(--shadow)}
+.card{background:var(--card);border:1.5px solid var(--border);border-radius:10px;padding:16px;transition:all .25s;box-shadow:var(--shadow)}
 .card:hover{border-color:var(--hover-border);box-shadow:var(--card-hover-shadow);transform:translateY(-1px)}
-.card.highlight{border-color:var(--accent);box-shadow:0 0 12px rgba(65,205,82,.25)}
+.card.highlight{border-color:var(--qt-pine);box-shadow:0 0 12px rgba(0,65,74,.15)}
+[data-theme="dark"] .card.highlight{border-color:var(--accent);box-shadow:0 0 12px rgba(65,205,82,.25)}
 .card-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
-.lang-code{font-size:18px;font-weight:700}
+.lang-code{font-size:18px;font-weight:700;color:var(--qt-pine)}
+[data-theme="dark"] .lang-code{color:var(--text)}
 .lang-name{font-size:13px;color:var(--text2);margin-left:6px}
 .avg-badge{font-size:14px;font-weight:700;padding:3px 12px;border-radius:12px;min-width:48px;text-align:center}
 .bar-wrap{height:6px;background:var(--border);border-radius:3px;margin-bottom:12px;overflow:hidden}
 .bar-fill{height:100%;border-radius:3px;transition:width .4s ease}
 .modules{display:flex;flex-wrap:wrap;gap:5px}
-.mod{font-size:12px;padding:3px 8px;border-radius:5px;cursor:pointer;border:1px solid transparent;transition:.15s;white-space:nowrap;font-weight:500}
-.mod:hover{border-color:var(--accent);transform:translateY(-1px)}
+.mod{font-size:12px;padding:3px 8px;border-radius:5px;cursor:pointer;border:1px solid transparent;transition:.15s;white-space:nowrap;font-weight:500;position:relative}
+.mod:hover{border-color:var(--qt-pine);transform:translateY(-1px)}
+[data-theme="dark"] .mod:hover{border-color:var(--accent)}
 .mod.na{opacity:.35;cursor:default}
 .mod.na:hover{border-color:transparent;transform:none}
+/* Template icon on hover */
+.mod .tpl-link{display:none;position:absolute;top:-6px;right:-6px;width:16px;height:16px;background:var(--qt-pine);color:#fff;border-radius:50%;font-size:9px;line-height:16px;text-align:center;text-decoration:none;z-index:2;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+[data-theme="dark"] .mod .tpl-link{background:var(--accent);color:#000}
+.mod:hover .tpl-link{display:block}
+.mod .tpl-link:hover{transform:scale(1.15)}
 
 .heatmap-container{padding:20px 24px;display:none}
 .heatmap-container.show{display:block}
@@ -99,15 +125,18 @@ select{cursor:pointer}
 .compare-container.show{display:block}
 .compare-table{width:100%;border-collapse:collapse;font-size:13px}
 .compare-table th,.compare-table td{padding:8px 12px;border:1px solid var(--border);text-align:center}
-.compare-table th{background:var(--card);position:sticky;top:96px;font-weight:600}
+.compare-table th{background:var(--control-bg);position:sticky;top:96px;font-weight:600;color:var(--qt-pine)}
+[data-theme="dark"] .compare-table th{color:var(--text)}
 .compare-table tr:hover td{background:var(--badge-bg)}
 .compare-table .up{color:var(--green);font-weight:600}
 .compare-table .down{color:var(--red);font-weight:600}
 .compare-table .same{color:var(--text2)}
 .compare-table .lang-col{text-align:left;font-weight:600}
+.compare-table .mod-col{text-align:left;font-weight:500;color:var(--text2);font-size:12px;padding-left:24px}
 
 .loading-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:var(--overlay-bg);display:flex;align-items:center;justify-content:center;z-index:1000;flex-direction:column;gap:16px}
-.loading-overlay .spinner{width:44px;height:44px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
+.loading-overlay .spinner{width:44px;height:44px;border:3px solid var(--border);border-top-color:var(--qt-pine);border-radius:50%;animation:spin .8s linear infinite}
+[data-theme="dark"] .loading-overlay .spinner{border-top-color:var(--accent)}
 .loading-overlay .load-text{color:var(--text2);font-size:15px}
 @keyframes spin{to{transform:rotate(360deg)}}
 
@@ -151,8 +180,9 @@ input[type=text]{width:100%}
 <button class="btn" onclick="setView('compare')">Compare</button>
 </div>
 <div class="stats" id="stats"></div>
-<div class="templates-bar" id="templatesBar" style="padding:4px 24px;font-size:12px;color:var(--text2)"></div>
 </div>
+
+<div class="compare-ver-picker" id="compareVerPicker"></div>
 
 <div class="grid" id="grid"></div>
 <div class="heatmap-container" id="heatmapView"></div>
@@ -180,11 +210,11 @@ function updateThemeBtn(theme){
 initTheme();
 
 const BASE = 'https://l10n-files.qt.io/l10n-files/';
-const JSON_URL = 'https://l10n-files.qt.io/l10n-files/l10n-status.json'; // URL for JSON data (generated by check-ts-json.pl)
+const JSON_URL = 'https://l10n-files.qt.io/l10n-files/l10n-status.json';
 
 let LANG_NAMES = {};
-let JSON_FILES = {};      // version_id → { lang → { module → file_path } }
-let JSON_TEMPLATES = {};  // version_id → { module → template_path }
+let JSON_FILES = {};
+let JSON_TEMPLATES = {};
 
 async function loadLangNames() {
   try {
@@ -211,6 +241,7 @@ let currentVer = '';
 let currentView = 'cards';
 let searchTerm = '';
 let sortMode = 'code';
+let compareVersions = []; // selected versions for compare mode
 
 function parseL10nPage(html) {
   const versions = [];
@@ -308,7 +339,6 @@ async function fetchJSON() {
       if (!resp.ok) continue;
       const json = await resp.json();
       if (!json.versions || !json.data) continue;
-      // Convert JSON structure to dashboard format
       const versions = json.versions.map(v => {
         let tag = '';
         const s = v.state;
@@ -320,7 +350,6 @@ async function fetchJSON() {
         else if (s === 'dev') tag = 'Dev';
         return { id: v.id, name: v.name, tag, base: v.id + '/', type: v.type };
       });
-      // Store files and templates from JSON for download links
       if (json.files) JSON_FILES = json.files;
       if (json.templates) JSON_TEMPLATES = json.templates;
       return { versions, data: json.data };
@@ -333,7 +362,6 @@ async function loadData() {
   const overlay = document.getElementById('loadingOverlay');
   await loadLangNames();
 
-  // Try JSON first, then fall back to HTML scraping
   let parsed = await fetchJSON();
   let live = !!parsed;
   if (!parsed) {
@@ -355,6 +383,9 @@ async function loadData() {
   const qtVersions = VERSIONS.filter(v => v.type === 'qt');
   const frozen = qtVersions.find(v => /frozen/i.test(v.tag));
   currentVer = frozen ? frozen.id : (qtVersions.length ? qtVersions[qtVersions.length - 1].id : VERSIONS[0]?.id || '');
+  // Initialize compare versions to last 2 Qt versions
+  if (qtVersions.length >= 2) compareVersions = [qtVersions[qtVersions.length - 2].id, qtVersions[qtVersions.length - 1].id];
+  else if (qtVersions.length === 1) compareVersions = [qtVersions[0].id];
   initUI();
   overlay.style.display = 'none';
 }
@@ -404,7 +435,6 @@ function heatColor(v) {
 }
 
 function getTsUrl(ver, lang, mod) {
-  // Use JSON file paths if available
   if (JSON_FILES[ver] && JSON_FILES[ver][lang] && JSON_FILES[ver][lang][mod]) {
     return BASE + JSON_FILES[ver][lang][mod];
   }
@@ -416,7 +446,6 @@ function getTsUrl(ver, lang, mod) {
 }
 
 function getTemplateUrl(ver, mod) {
-  // Use JSON template paths if available
   if (JSON_TEMPLATES[ver] && JSON_TEMPLATES[ver][mod]) {
     return BASE + JSON_TEMPLATES[ver][mod];
   }
@@ -446,6 +475,22 @@ function setView(v) {
   render();
 }
 
+function toggleCompareVersion(id) {
+  const idx = compareVersions.indexOf(id);
+  if (idx >= 0) { if (compareVersions.length > 1) compareVersions.splice(idx, 1); }
+  else { if (compareVersions.length >= 4) compareVersions.shift(); compareVersions.push(id); }
+  renderCompareVerPicker();
+  render();
+}
+
+function renderCompareVerPicker() {
+  const el = document.getElementById('compareVerPicker');
+  el.className = 'compare-ver-picker' + (currentView === 'compare' ? ' show' : '');
+  el.innerHTML = '<label>Compare versions:</label>' + VERSIONS.map(v =>
+    `<span class="compare-ver-chip${compareVersions.includes(v.id) ? ' selected' : ''}" onclick="toggleCompareVersion('${v.id}')">${v.name}</span>`
+  ).join('');
+}
+
 function render() {
   const d = DATA[currentVer] || {};
   let langs = Object.keys(d);
@@ -458,20 +503,13 @@ function render() {
   else langs.sort();
 
   const allLangs = Object.keys(d);
-  const totalMods = allLangs.reduce((s, l) => s + Object.keys(d[l]).length, 0);
-  const perfect = allLangs.filter(l => getAvg(d[l]) === 100).length;
-  document.getElementById('stats').innerHTML = `<span><b>${allLangs.length}</b> languages</span><span><b>${totalMods}</b> modules</span><span><b>${perfect}</b> at 100%</span>`;
+  const fullyTranslated = allLangs.filter(l => getAvg(d[l]) === 100).length;
+  document.getElementById('stats').innerHTML =
+    `<span class="stat-chip"><b>${allLangs.length}</b> <span>languages</span></span>` +
+    `<span class="stat-chip"><b>${fullyTranslated}</b> <span>fully translated</span></span>`;
 
-  // Render template download links
-  const v = VERSIONS.find(x => x.id === currentVer);
-  if (v) {
-    const mods = new Set();
-    allLangs.forEach(l => Object.keys(d[l]).forEach(m => mods.add(m)));
-    const tplLinks = [...mods].sort().map(m =>
-      `<a href="${getTemplateUrl(currentVer, m)}" target="_blank" style="color:var(--accent);text-decoration:none;margin-right:8px" title="Download ${m} template">${m}</a>`
-    ).join('');
-    document.getElementById('templatesBar').innerHTML = tplLinks ? `📋 Templates: ${tplLinks}` : '';
-  }
+  // Show/hide compare version picker
+  renderCompareVerPicker();
 
   document.getElementById('grid').style.display = currentView === 'cards' ? '' : 'none';
   document.getElementById('heatmapView').className = 'heatmap-container' + (currentView === 'heatmap' ? ' show' : '');
@@ -490,11 +528,12 @@ function renderCards(langs, d) {
     const modsHtml = Object.entries(mods).map(([mod, val]) => {
       const na = val < 0;
       const col = na ? '' : 'background:' + pctBg(val) + ';color:' + pctColor(val);
-      if (na) return `<span class="mod na">${mod} n/a</span>`;
-      return `<a class="mod" style="${col}" href="${getTsUrl(currentVer, lang, mod)}" title="Download ${mod}_${lang}.ts (${val}%)" target="_blank">${mod} ${val}%</a>`;
+      const tplLink = `<a class="tpl-link" href="${getTemplateUrl(currentVer, mod)}" target="_blank" title="Download ${mod} template">T</a>`;
+      if (na) return `<span class="mod na">${mod} n/a${tplLink}</span>`;
+      return `<a class="mod" style="${col}" href="${getTsUrl(currentVer, lang, mod)}" title="Download ${mod}_${lang}.ts (${val}%)" target="_blank">${mod} ${val}%${tplLink}</a>`;
     }).join('');
     const dlAll = Object.keys(mods).length > 1
-      ? `<a href="${BASE + (VERSIONS.find(x=>x.id===currentVer)||{}).base}" target="_blank" style="font-size:11px;color:var(--accent);text-decoration:none;margin-left:auto" title="Browse all ${lang} catalogs for this version">⬇ All files</a>`
+      ? `<a href="${BASE + (VERSIONS.find(x=>x.id===currentVer)||{}).base}" target="_blank" style="font-size:11px;color:var(--text2);text-decoration:none;margin-left:auto" title="Browse all ${lang} catalogs for this version">⬇ All</a>`
       : '';
     return `<div class="card${isUser ? ' highlight' : ''}" id="lang-${lang}">
 <div class="card-head"><div><span class="lang-code">${lang}</span><span class="lang-name">${langName(lang)}</span></div>${dlAll}<span class="avg-badge" style="background:${pctBg(avg)};color:${pctColor(avg)}">${avg}%</span></div>
@@ -513,10 +552,11 @@ function renderHeatmap(langs, d) {
   langs.forEach(lang => {
     html += `<div class="hm-label">${lang}</div>`;
     mods.forEach(mod => {
-      const v = (d[lang] || {})[mod], val = v === undefined ? -2 : v;
-      const bg = val === -2 ? 'transparent' : heatColor(val);
-      const txt = val === -2 ? '' : val < 0 ? '0%' : val + '%'; // Changed to '0%' for n/a values
-      html += `<div class="hm-cell" style="background:${bg}" title="${lang} / ${mod}: ${txt}">${val >= 0 && val <= 100 ? val : ''}</div>`;
+      const v = (d[lang] || {})[mod], val = v === undefined ? 0 : v;
+      const displayVal = val < 0 ? 0 : val;
+      const bg = heatColor(displayVal);
+      const txt = displayVal + '%';
+      html += `<div class="hm-cell" style="background:${bg}" title="${lang} / ${mod}: ${txt}">${displayVal <= 100 ? displayVal : ''}</div>`;
     });
   });
   c.innerHTML = html + '</div>';
@@ -524,34 +564,83 @@ function renderHeatmap(langs, d) {
 
 function renderCompare(langs) {
   const c = document.getElementById('compareView');
-  const qtVers = VERSIONS.filter(v => v.type === 'qt');
-  let html = `<table class="compare-table"><thead><tr><th class="lang-col">Language</th>`;
-  qtVers.forEach(v => html += `<th>${v.name}</th>`);
-  if (qtVers.length >= 2) { const l2 = qtVers.slice(-2); html += `<th>Δ ${l2[0].name}→${l2[1].name}</th>`; }
-  html += `</tr></thead><tbody>`;
+  if (compareVersions.length < 2) {
+    c.innerHTML = '<div style="padding:24px;color:var(--text2);text-align:center">Select at least 2 versions above to compare.</div>';
+    return;
+  }
+
+  const selVers = VERSIONS.filter(v => compareVersions.includes(v.id));
+  // Collect all languages across selected versions
   const allLangs = new Set();
-  qtVers.forEach(v => Object.keys(DATA[v.id] || {}).forEach(l => allLangs.add(l)));
+  selVers.forEach(v => Object.keys(DATA[v.id] || {}).forEach(l => allLangs.add(l)));
   let sortedLangs = [...allLangs].sort();
   const q = searchTerm.toLowerCase();
   if (q) sortedLangs = sortedLangs.filter(l => (l + ' ' + langName(l)).toLowerCase().includes(q));
-  // Sort compare rows by current version's average according to sortMode
-  const curVerData = DATA[currentVer] || {};
-  if (sortMode === 'pct-desc') sortedLangs.sort((a, b) => (curVerData[b] ? getAvg(curVerData[b]) : -1) - (curVerData[a] ? getAvg(curVerData[a]) : -1));
-  else if (sortMode === 'pct-asc') sortedLangs.sort((a, b) => (curVerData[a] ? getAvg(curVerData[a]) : -1) - (curVerData[b] ? getAvg(curVerData[b]) : -1));
-  sortedLangs.forEach(lang => {
-    html += `<tr><td class="lang-col">${lang} <small style="color:var(--text2)">${langName(lang)}</small></td>`;
-    const avgs = [];
-    qtVers.forEach(v => {
-      const d = (DATA[v.id] || {})[lang], avg = d ? getAvg(d) : null;
-      avgs.push(avg);
-      html += `<td style="color:${avg !== null ? pctColor(avg) : 'var(--text2)'}">${avg !== null ? avg + '%' : '-'}</td>`;
+
+  // Collect all modules across selected versions
+  const allMods = new Set();
+  selVers.forEach(v => {
+    const vd = DATA[v.id] || {};
+    Object.values(vd).forEach(m => Object.keys(m).forEach(k => allMods.add(k)));
+  });
+  const mods = [...allMods].sort();
+
+  // Sort languages
+  if (sortMode === 'pct-desc' || sortMode === 'pct-asc') {
+    const lastVer = selVers[selVers.length - 1];
+    const vd = DATA[lastVer.id] || {};
+    sortedLangs.sort((a, b) => {
+      const aa = vd[a] ? getAvg(vd[a]) : -1, bb = vd[b] ? getAvg(vd[b]) : -1;
+      return sortMode === 'pct-desc' ? bb - aa : aa - bb;
     });
-    if (qtVers.length >= 2) {
-      const a = avgs[avgs.length - 2], b = avgs[avgs.length - 1];
+  }
+
+  let html = `<table class="compare-table"><thead><tr><th class="lang-col">Language / Module</th>`;
+  selVers.forEach(v => html += `<th>${v.name}</th>`);
+  if (selVers.length >= 2) {
+    html += `<th>Δ</th>`;
+  }
+  html += `</tr></thead><tbody>`;
+
+  sortedLangs.forEach(lang => {
+    // Language summary row
+    const avgs = selVers.map(v => {
+      const d = (DATA[v.id] || {})[lang];
+      return d ? getAvg(d) : null;
+    });
+    html += `<tr style="cursor:pointer" onclick="this.classList.toggle('expanded');let s=this.nextElementSibling;while(s&&s.dataset.parent==='${lang}'){s.style.display=s.style.display==='none'?'':'none';s=s.nextElementSibling}">`;
+    html += `<td class="lang-col" style="font-weight:700">${lang} <small style="color:var(--text2)">${langName(lang)}</small> <span style="font-size:10px;color:var(--text2)">▸</span></td>`;
+    avgs.forEach(avg => {
+      html += `<td style="color:${avg !== null ? pctColor(avg) : 'var(--text2)'};font-weight:600">${avg !== null ? avg + '%' : '-'}</td>`;
+    });
+    if (selVers.length >= 2) {
+      const a = avgs[0], b = avgs[avgs.length - 1];
       if (a !== null && b !== null) { const delta = b - a; html += `<td class="${delta > 0 ? 'up' : delta < 0 ? 'down' : 'same'}">${delta > 0 ? '+' : ''}${delta}</td>`; }
       else html += `<td>-</td>`;
     }
     html += `</tr>`;
+
+    // Per-module rows (hidden by default)
+    mods.forEach(mod => {
+      const vals = selVers.map(v => {
+        const d = (DATA[v.id] || {})[lang];
+        if (!d) return null;
+        const val = d[mod];
+        return val === undefined ? null : val < 0 ? 0 : val;
+      });
+      // Only show module row if it exists in at least one selected version
+      if (vals.every(v => v === null)) return;
+      html += `<tr data-parent="${lang}" style="display:none"><td class="mod-col">↳ ${mod}</td>`;
+      vals.forEach(val => {
+        html += `<td style="color:${val !== null ? pctColor(val) : 'var(--text2)'};font-size:12px">${val !== null ? val + '%' : '-'}</td>`;
+      });
+      if (selVers.length >= 2) {
+        const a = vals[0], b = vals[vals.length - 1];
+        if (a !== null && b !== null) { const delta = b - a; html += `<td class="${delta > 0 ? 'up' : delta < 0 ? 'down' : 'same'}" style="font-size:12px">${delta > 0 ? '+' : ''}${delta}</td>`; }
+        else html += `<td>-</td>`;
+      }
+      html += `</tr>`;
+    });
   });
   c.innerHTML = html + `</tbody></table>`;
 }
@@ -576,7 +665,7 @@ function initYourLangDropdown() {
   const container = document.getElementById('yourLang');
   const langs = getAllLangs();
   const current = detectLang();
-  let html = '<select class="your-lang" id="yourLangSelect" style="padding:3px 8px;border-radius:4px;font-size:12px;font-weight:600;background:var(--accent);color:#fff;border:1px solid rgba(255,255,255,.3);cursor:pointer">';
+  let html = '<select class="your-lang" id="yourLangSelect" style="padding:3px 8px;border-radius:4px;font-size:12px;font-weight:600;background:var(--qt-pine);color:#fff;border:1px solid rgba(255,255,255,.3);cursor:pointer">';
   html += '<option value="">📍 Your language…</option>';
   langs.forEach(l => {
     const name = langName(l);
