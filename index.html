@@ -515,7 +515,7 @@ function renderHeatmap(langs, d) {
     mods.forEach(mod => {
       const v = (d[lang] || {})[mod], val = v === undefined ? -2 : v;
       const bg = val === -2 ? 'transparent' : heatColor(val);
-      const txt = val === -2 ? '' : val < 0 ? 'n/a' : val + '%';
+      const txt = val === -2 ? '' : val < 0 ? '0%' : val + '%'; // Changed to '0%' for n/a values
       html += `<div class="hm-cell" style="background:${bg}" title="${lang} / ${mod}: ${txt}">${val >= 0 && val <= 100 ? val : ''}</div>`;
     });
   });
