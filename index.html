@@ -55,7 +55,10 @@ a:hover{text-decoration:underline}
 .ver-pills{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:4px}
 .ver-pill{padding:4px 14px;border-radius:20px;font-size:13px;cursor:pointer;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.1);color:rgba(255,255,255,.85);transition:.2s}
 .ver-pill:hover{background:rgba(255,255,255,.2)}
-.ver-pill.active{background:#2CDE85;color:#00414A;border-color:#2CDE85;font-weight:600}
+.ver-pill.active{background:#2CDE85;color:#00414A;border-color:#2CDE85;font-weight:600;outline:none;box-shadow:none}
+/* Project pills: larger and bolder to establish hierarchy */
+.ver-pill.project-pill{padding:5px 18px;font-size:14px;font-weight:600;border-width:2px}
+.ver-pill.project-pill.active{background:#2CDE85;color:#00414A;border-color:#2CDE85;font-weight:700}
 .ver-pill .pct{margin-left:4px;opacity:.7;font-size:11px}
 .ver-pill .tag{margin-left:4px;opacity:.6;font-size:10px;font-style:italic}
 
@@ -74,8 +77,9 @@ select{cursor:pointer}
 .btn{padding:5px 14px;border-radius:6px;border:1.5px solid var(--border);background:var(--card);color:var(--text);cursor:pointer;font-size:13px;transition:.2s;font-weight:500}
 .btn:hover{border-color:var(--qt-pine);color:var(--qt-pine)}
 [data-theme="dark"] .btn:hover{border-color:var(--accent);color:var(--accent)}
-.btn.active{background:var(--qt-pine);color:#fff;border-color:var(--qt-pine)}
-[data-theme="dark"] .btn.active{background:var(--accent);color:#000;border-color:var(--accent)}
+.btn.active{background:var(--qt-pine);color:#fff;border-color:var(--qt-pine);outline:none;box-shadow:none}
+[data-theme="dark"] .btn.active{background:var(--accent);color:#000;border-color:var(--accent);outline:none;box-shadow:none}
+.btn:focus,.btn:focus-visible,.btn.active:focus,.btn.active:focus-visible{outline:none;box-shadow:none}
 
 .your-lang{background:var(--accent);color:#fff;padding:3px 10px;border-radius:4px;font-size:12px;cursor:pointer;white-space:nowrap;font-weight:600}
 
@@ -114,7 +118,7 @@ select{cursor:pointer}
 .heatmap-container.show{display:block}
 .heatmap{display:grid;gap:2px;font-size:11px}
 .hm-cell{width:100%;aspect-ratio:1;border-radius:3px;display:flex;align-items:center;justify-content:center;font-weight:600;cursor:default;min-height:20px}
-.hm-label{font-size:11px;color:var(--text2);text-align:right;padding-right:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hm-label{font-size:11px;color:var(--text2);text-align:center;padding-right:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;justify-content:center}
 .hm-header{font-size:10px;color:var(--text2);text-align:center;writing-mode:vertical-lr;transform:rotate(180deg);height:60px;overflow:hidden}
 
 .compare-container{padding:20px 24px;display:none}
@@ -160,7 +164,6 @@ input[type=text]{width:100%}
 <span class="data-source" id="dataSource"></span>
 </h1>
 <div class="header-actions">
-<span id="yourLang"></span>
 <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle dark/light theme">🌙 Dark</button>
 </div>
 </div>
@@ -175,7 +178,7 @@ input[type=text]{width:100%}
 
 <div class="controls-bar">
 <input type="text" id="search" placeholder="🔍 Search language…">
-<select id="sortBy"><option value="code">Sort: Code</option><option value="pct-desc">Sort: Best first</option><option value="pct-asc">Sort: Worst first</option></select>
+<select id="sortBy"><option value="code">Sort: Alphabetically</option><option value="pct-desc">Sort: Most complete first</option><option value="pct-asc">Sort: Least complete first</option></select>
 <div class="view-tabs">
 <button class="btn active" onclick="setView('cards')">Cards</button>
 <button class="btn" onclick="setView('heatmap')">Heatmap</button>
@@ -185,6 +188,11 @@ input[type=text]{width:100%}
 <div class="stats" id="stats"></div>
 </div>
 
+<div id="jumpToLang" style="padding:10px 24px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+<label for="yourLangSelect" style="font-size:13px;font-weight:600;color:var(--text);white-space:nowrap">Jump to language</label>
+<span id="yourLang"></span>
+<button onclick="jumpToSelectedLang()" style="background:none;border:none;font-size:16px;cursor:pointer;color:var(--text);padding:2px" title="Go to language">→</button>
+</div>
 <div class="grid" id="grid"></div>
 <div class="heatmap-container" id="heatmapView"></div>
 <div class="compare-container" id="compareView"></div>
@@ -249,6 +257,17 @@ let currentProject = 'qt'; // 'qt', 'creator', 'ifw'
 function parseL10nPage(html) {
   const versions = [];
   const data = {};
+
+  // Extract directory names from href attributes before stripping HTML
+  // Map: directory -> set of hrefs for that directory
+  const hrefDirs = new Set();
+  const hrefRegex = /href="([^"]+\.ts)"/g;
+  let hm;
+  while ((hm = hrefRegex.exec(html)) !== null) {
+    const dir = hm[1].split('/')[0];
+    if (dir) hrefDirs.add(dir);
+  }
+
   const text = html
     .replace(/<br\s*\/?>/gi, '\n')
     .replace(/<[^>]+>/g, ' ')
@@ -267,26 +286,54 @@ function parseL10nPage(html) {
     sections.push({ title: matches[i].title, body: text.substring(start, end) });
   }
 
-  for (const section of sections) {
-    const title = section.title;
-    const body = section.body;
+  // Helper: find the actual directory from hrefs that contains files for this section
+  function findBaseDir(sectionBody, type) {
+    // Extract a sample href from the raw HTML for this section
+    // We match by looking for file patterns in the section body
+    const langMatch = sectionBody.match(/\b([a-z]{2}(?:_[A-Z]{2})?)\s*[\(:]/);
+    if (!langMatch) return null;
+    const sampleLang = langMatch[1];
+    // Search in the original HTML for href containing this language file
+    for (const dir of hrefDirs) {
+      if (type === 'creator' && dir.startsWith('creator')) {
+        const re = new RegExp('href="' + dir + '/qtcreator_' + sampleLang + '\\.ts"');
+        if (re.test(html)) return dir;
+      } else if (type === 'ifw' && dir.startsWith('ifw')) {
+        const re = new RegExp('href="' + dir + '/ifw_' + sampleLang + '\\.ts"');
+        if (re.test(html)) return dir;
+      } else if (type === 'qt' && dir.startsWith('qt-')) {
+        const re = new RegExp('href="' + dir + '/qtbase_' + sampleLang + '\\.ts"');
+        if (re.test(html)) return dir;
+      }
+    }
+    return null;
+  }
+
+  for (let si = 0; si < sections.length; si++) {
+    const title = sections[si].title;
+    const body = sections[si].body;
     let id, name, tag, type, base;
 
     if (title.startsWith('Qt Creator')) {
       const ver = title.replace('Qt Creator ', '');
-      id = 'qtcreator-' + ver.replace('.', '');
-      name = title; type = 'creator'; base = 'qtcreator-' + ver.replace('.', '') + '/';
+      type = 'creator'; name = title;
+      const dir = findBaseDir(body, type);
+      id = dir || ('qtcreator-' + ver.replace('.', ''));
+      base = (dir || id) + '/';
       tag = /under active development/i.test(body) ? 'Dev' : /stable/i.test(body) ? 'Stable' : '';
     } else if (title.startsWith('Qt Installer Framework')) {
       const ver = title.replace('Qt Installer Framework ', '');
-      id = 'ifw-' + ver.replace('.', '');
-      name = 'IFW ' + ver; type = 'ifw'; base = 'ifw-' + ver.replace('.', '') + '/';
+      type = 'ifw'; name = 'IFW ' + ver;
+      const dir = findBaseDir(body, type);
+      id = dir || ('ifw-' + ver.replace('.', ''));
+      base = (dir || id) + '/';
       tag = /stable/i.test(body) ? 'Stable' : '';
     } else {
       const ver = title.replace('Qt ', '');
-      if (ver === '5.15') { id = 'qt-old515'; base = 'qt-old515/'; }
-      else { id = 'qt-' + ver.replace('.', ''); base = 'qt-' + ver.replace('.', '') + '/'; }
-      name = title; type = 'qt';
+      type = 'qt'; name = title;
+      const dir = findBaseDir(body, type);
+      id = dir || ('qt-' + ver.replace('.', ''));
+      base = (dir || id) + '/';
       tag = /old stable/i.test(body) ? 'Old stable' : /long term supported/i.test(body) ? 'LTS' :
         /strings are hard-frozen|strings frozen/i.test(body) ? 'Strings frozen' :
         /stable/i.test(body) ? 'Stable' : /development/i.test(body) ? 'Dev' : '';
@@ -413,7 +460,21 @@ async function refreshData() {
   btn.classList.remove('loading'); btn.textContent = '⟳ Refresh';
 }
 
-function getAvg(mods) { const v = Object.values(mods).filter(x => x >= 0); return v.length ? Math.round(v.reduce((a, b) => a + b, 0) / v.length) : 0; }
+function getAvg(mods, totalModCount) {
+  const v = Object.values(mods).filter(x => x >= 0);
+  if (!v.length) return 0;
+  const sum = v.reduce((a, b) => a + b, 0);
+  // If totalModCount provided, divide by total modules (treating missing as 0%)
+  const divisor = totalModCount && totalModCount > v.length ? totalModCount : v.length;
+  return Math.round(sum / divisor);
+}
+// Get all modules that exist for a version across all languages
+function getAllModsForVersion(vid) {
+  const d = DATA[vid]; if (!d) return new Set();
+  const mods = new Set();
+  Object.values(d).forEach(m => Object.keys(m).forEach(k => { if ((m[k] || 0) >= 0) mods.add(k); }));
+  return mods;
+}
 
 function pctColor(v) {
   if (v >= 90) return 'var(--green)';
@@ -425,18 +486,19 @@ function pctColor(v) {
 function pctBg(v) {
   const dark = document.documentElement.getAttribute('data-theme') === 'dark';
   if (dark) {
-    if (v >= 90) return 'rgba(65,205,82,.12)';
-    if (v >= 70) return 'rgba(65,205,82,.08)';
-    if (v >= 40) return 'rgba(230,168,23,.12)';
-    if (v >= 1) return 'rgba(212,120,42,.12)';
-    return 'rgba(224,82,82,.12)';
+    // Pre-multiplied solid colors (no alpha) on dark #2a2a2a background
+    if (v >= 90) return '#2f3e31';
+    if (v >= 70) return '#2d362e';
+    if (v >= 40) return '#3b3527';
+    if (v >= 1) return '#3a3028';
+    return '#3a2a2a';
   }
-  // Light mode: solid backgrounds for better contrast
-  if (v >= 90) return '#d4f5dc';
-  if (v >= 70) return '#dff3e4';
-  if (v >= 40) return '#fef3d0';
-  if (v >= 1) return '#fce8d5';
-  return '#fdd';
+  // Light mode: desaturated ~30% more
+  if (v >= 90) return '#e4f5e8';
+  if (v >= 70) return '#e9f3ec';
+  if (v >= 40) return '#f6f0dc';
+  if (v >= 1) return '#f5ebe0';
+  return '#f5e0e0';
 }
 function heatColor(v) {
   if (v < 0) return 'var(--border)';
@@ -471,7 +533,8 @@ function getTemplateUrl(ver, mod) {
 
 function versionAvg(vid) {
   const d = DATA[vid]; if (!d) return 0;
-  const avgs = Object.values(d).map(m => getAvg(m));
+  const totalMods = getAllModsForVersion(vid).size;
+  const avgs = Object.values(d).map(m => getAvg(m, totalMods));
   return avgs.length ? Math.round(avgs.reduce((a, b) => a + b, 0) / avgs.length) : 0;
 }
 
@@ -486,7 +549,7 @@ function renderPills() {
   // Project pills
   const projects = getProjectTypes();
   document.getElementById('projectPills').innerHTML = projects.map(t =>
-    `<div class="ver-pill${t === currentProject ? ' active' : ''}" onclick="setProject('${t}')">${projectLabel(t)}</div>`
+    `<div class="ver-pill project-pill${t === currentProject ? ' active' : ''}" onclick="setProject('${t}')">${projectLabel(t)}</div>`
   ).join('');
 
   // Version pills filtered by project
@@ -540,8 +603,9 @@ function render() {
   let langs = Object.keys(d);
   const q = searchTerm.toLowerCase();
   if (q) langs = langs.filter(l => (l + ' ' + langName(l)).toLowerCase().includes(q));
+  const totalMods = getAllModsForVersion(currentVer).size;
   const avgMap = {};
-  langs.forEach(l => avgMap[l] = getAvg(d[l]));
+  langs.forEach(l => avgMap[l] = getAvg(d[l], totalMods));
   if (sortMode === 'pct-desc') langs.sort((a, b) => avgMap[b] - avgMap[a]);
   else if (sortMode === 'pct-asc') langs.sort((a, b) => avgMap[a] - avgMap[b]);
   else langs.sort();
@@ -566,8 +630,9 @@ function render() {
 function renderCards(langs, d) {
   const grid = document.getElementById('grid');
   const userLang = detectLang();
+  const totalMods = getAllModsForVersion(currentVer).size;
   grid.innerHTML = langs.map(lang => {
-    const mods = d[lang], avg = getAvg(mods), isUser = lang === userLang;
+    const mods = d[lang], avg = getAvg(mods, totalMods), isUser = lang === userLang;
     const modsHtml = Object.entries(mods).map(([mod, val]) => {
       const na = val < 0;
       const col = na ? '' : 'background:' + pctBg(val) + ';color:' + pctColor(val);
@@ -575,7 +640,7 @@ function renderCards(langs, d) {
       return `<a class="mod" style="${col}" href="${getTsUrl(currentVer, lang, mod)}" title="Download ${mod}_${lang}.ts (${val}%)" target="_blank">${mod} ${val}%</a>`;
     }).join('');
     const dlAll = Object.keys(mods).length > 1
-      ? `<a href="${BASE + (VERSIONS.find(x=>x.id===currentVer)||{}).base}" target="_blank" style="font-size:11px;color:var(--text2);text-decoration:none;margin-left:auto" title="Browse all ${lang} catalogs for this version">⬇ All</a>`
+      ? `<a href="${BASE + (VERSIONS.find(x=>x.id===currentVer)||{}).base}" target="_blank" style="font-size:11px;color:var(--text2);text-decoration:none;margin-left:8px;margin-right:8px" title="Browse all ${lang} catalogs for this version">Browse all ↗</a>`
       : '';
     return `<div class="card${isUser ? ' highlight' : ''}" id="lang-${lang}">
 <div class="card-head"><div><span class="lang-code">${lang}</span><span class="lang-name">${langName(lang)}</span></div>${dlAll}<span class="avg-badge" style="background:${pctBg(avg)};color:${pctColor(avg)}">${avg}%</span></div>
@@ -596,11 +661,11 @@ function renderHeatmap(langs, d) {
     mods.forEach(mod => {
       const v = (d[lang] || {})[mod], val = v === undefined ? 0 : v;
       const displayVal = val < 0 ? 0 : val;
-      const isMeta = /^meta$/i.test(mod);
-      const bg = isMeta ? 'var(--border)' : heatColor(displayVal);
-      const txt = displayVal + '%';
-      const extraStyle = isMeta ? 'opacity:.45;' : '';
-      html += `<div class="hm-cell" style="background:${bg};${extraStyle}" title="${lang} / ${mod}: ${txt}">${displayVal <= 100 ? displayVal : ''}</div>`;
+      const isNA = val !== undefined && val < 0;
+      const bg = isNA ? 'var(--border)' : heatColor(displayVal);
+      const txt = isNA ? 'n/a' : displayVal + '%';
+      const extraStyle = isNA ? 'opacity:.35;filter:grayscale(1);' : '';
+      html += `<div class="hm-cell" style="background:${bg};${extraStyle}" title="${lang} / ${mod}: ${txt}">${isNA ? '' : (displayVal <= 100 ? displayVal : '')}</div>`;
     });
   });
   c.innerHTML = html + '</div>';
@@ -633,8 +698,9 @@ function renderCompare(langs) {
   if (sortMode === 'pct-desc' || sortMode === 'pct-asc') {
     const lastVer = selVers[selVers.length - 1];
     const vd = DATA[lastVer.id] || {};
+    const tm = getAllModsForVersion(lastVer.id).size;
     sortedLangs.sort((a, b) => {
-      const aa = vd[a] ? getAvg(vd[a]) : -1, bb = vd[b] ? getAvg(vd[b]) : -1;
+      const aa = vd[a] ? getAvg(vd[a], tm) : -1, bb = vd[b] ? getAvg(vd[b], tm) : -1;
       return sortMode === 'pct-desc' ? bb - aa : aa - bb;
     });
   }
@@ -650,10 +716,10 @@ function renderCompare(langs) {
     // Language summary row
     const avgs = selVers.map(v => {
       const d = (DATA[v.id] || {})[lang];
-      return d ? getAvg(d) : null;
+      return d ? getAvg(d, getAllModsForVersion(v.id).size) : null;
     });
-    html += `<tr style="cursor:pointer" onclick="this.classList.toggle('expanded');let a=this.querySelector('.expand-arrow');a.textContent=this.classList.contains('expanded')?'▲':'▼';let s=this.nextElementSibling;while(s&&s.dataset.parent==='${lang}'){s.style.display=s.style.display==='none'?'':'none';s=s.nextElementSibling}">`;
-    html += `<td class="lang-col" style="font-weight:700">${lang} <small style="color:var(--text2)">${langName(lang)}</small> <span class="expand-arrow" style="font-size:10px;color:var(--text2)">▼</span></td>`;
+    html += `<tr style="cursor:pointer" onclick="this.classList.toggle('expanded');let a=this.querySelector('.expand-arrow');a.textContent=this.classList.contains('expanded')?'▼':'▸';let s=this.nextElementSibling;while(s&&s.dataset.parent==='${lang}'){s.style.display=s.style.display==='none'?'':'none';s=s.nextElementSibling}">`;
+    html += `<td class="lang-col" style="font-weight:700">${lang} <small style="color:var(--text2)">${langName(lang)}</small> <span class="expand-arrow" style="font-size:10px;color:var(--text2)">▸</span></td>`;
     avgs.forEach(avg => {
       html += `<td style="color:${avg !== null ? pctColor(avg) : 'var(--text2)'};font-weight:600">${avg !== null ? avg + '%' : '-'}</td>`;
     });
@@ -699,8 +765,14 @@ function renderTemplates() {
   const vname = v ? v.name : currentVer;
   let html = `<h3 style="margin-bottom:12px;color:var(--text)">Templates for ${vname}</h3>`;
   html += `<p style="font-size:13px;color:var(--text2);margin-bottom:16px">Untranslated template files (.ts) for each module. Use these as a starting point for a new translation.</p>`;
+  // Meta catalog (qt_untranslated.ts) if qt meta module exists
+  const hasMeta = mods.some(m => /^qt$/i.test(m));
+  if (hasMeta) {
+    const metaUrl = getTemplateUrl(currentVer, 'qt');
+    html += `<div style="margin-bottom:12px"><a href="${metaUrl}" target="_blank" class="btn" style="text-decoration:none;font-size:13px;font-weight:600">⬇ qt_untranslated.ts (meta catalog)</a></div>`;
+  }
   html += `<div style="display:flex;flex-wrap:wrap;gap:8px">`;
-  mods.forEach(mod => {
+  mods.filter(m => !/^qt$/i.test(m)).forEach(mod => {
     const url = getTemplateUrl(currentVer, mod);
     html += `<a href="${url}" target="_blank" class="btn" style="text-decoration:none;font-size:13px">⬇ ${mod}_untranslated.ts</a>`;
   });
@@ -724,12 +796,17 @@ function getAllLangs() {
   return [...s].sort();
 }
 
+function jumpToSelectedLang() {
+  const sel = document.getElementById('yourLangSelect');
+  if (sel && sel.value) jumpToLang(sel.value);
+}
+
 function initYourLangDropdown() {
   const container = document.getElementById('yourLang');
   const langs = getAllLangs();
   const current = detectLang();
-  let html = '<select class="your-lang" id="yourLangSelect" style="padding:3px 8px;border-radius:4px;font-size:12px;font-weight:600;background:var(--qt-pine);color:#fff;border:1px solid rgba(255,255,255,.3);cursor:pointer">';
-  html += '<option value="">📍 Your language…</option>';
+  let html = '<select id="yourLangSelect" style="padding:6px 10px;border-radius:6px;font-size:13px;background:var(--input-bg);color:var(--text);border:1.5px solid var(--border);cursor:pointer">';
+  html += '<option value="">Select language…</option>';
   langs.forEach(l => {
     const name = langName(l);
     html += `<option value="${l}"${l === current ? ' selected' : ''}>${l}${name ? ' – ' + name : ''}</option>`;
@@ -756,7 +833,9 @@ function jumpToLang(code) {
 }
 
 document.getElementById('search').addEventListener('input', e => { searchTerm = e.target.value; render(); });
-document.getElementById('sortBy').addEventListener('change', e => { sortMode = e.target.value; render(); });
+document.getElementById('sortBy').addEventListener('change', e => { sortMode = e.target.value; localStorage.setItem('qt-dash-sortMode', sortMode); render(); });
+// Restore saved sort mode
+(function() { const saved = localStorage.getItem('qt-dash-sortMode'); if (saved) { sortMode = saved; document.getElementById('sortBy').value = saved; } })();
 
 loadData();
 </script>
