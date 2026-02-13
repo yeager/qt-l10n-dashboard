@@ -108,11 +108,7 @@ select{cursor:pointer}
 [data-theme="dark"] .mod:hover{border-color:var(--accent)}
 .mod.na{opacity:.35;cursor:default}
 .mod.na:hover{border-color:transparent;transform:none}
-/* Template icon on hover */
-.mod .tpl-link{display:none;position:absolute;top:-6px;right:-6px;width:16px;height:16px;background:var(--qt-pine);color:#fff;border-radius:50%;font-size:9px;line-height:16px;text-align:center;text-decoration:none;z-index:2;box-shadow:0 1px 3px rgba(0,0,0,.2)}
-[data-theme="dark"] .mod .tpl-link{background:var(--accent);color:#000}
-.mod:hover .tpl-link{display:block}
-.mod .tpl-link:hover{transform:scale(1.15)}
+/* (template hover buttons removed — now in Templates tab) */
 
 .heatmap-container{padding:20px 24px;display:none}
 .heatmap-container.show{display:block}
@@ -168,7 +164,13 @@ input[type=text]{width:100%}
 <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle dark/light theme">🌙 Dark</button>
 </div>
 </div>
+<div style="display:flex;gap:6px;align-items:center;margin-bottom:6px;flex-wrap:wrap">
+<div class="ver-pills" id="projectPills"></div>
+</div>
+<div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap">
+<span id="verModeLabel" style="font-size:11px;color:rgba(255,255,255,.6);margin-right:4px"></span>
 <div class="ver-pills" id="verPills"></div>
+</div>
 </div>
 
 <div class="controls-bar">
@@ -178,15 +180,15 @@ input[type=text]{width:100%}
 <button class="btn active" onclick="setView('cards')">Cards</button>
 <button class="btn" onclick="setView('heatmap')">Heatmap</button>
 <button class="btn" onclick="setView('compare')">Compare</button>
+<button class="btn" onclick="setView('templates')">Templates</button>
 </div>
 <div class="stats" id="stats"></div>
 </div>
 
-<div class="compare-ver-picker" id="compareVerPicker"></div>
-
 <div class="grid" id="grid"></div>
 <div class="heatmap-container" id="heatmapView"></div>
 <div class="compare-container" id="compareView"></div>
+<div class="compare-container" id="templatesView"></div>
 
 <script>
 // ── Theme ──
@@ -242,6 +244,7 @@ let currentView = 'cards';
 let searchTerm = '';
 let sortMode = 'code';
 let compareVersions = []; // selected versions for compare mode
+let currentProject = 'qt'; // 'qt', 'creator', 'ifw'
 
 function parseL10nPage(html) {
   const versions = [];
@@ -380,6 +383,7 @@ async function loadData() {
       else { document.getElementById('grid').innerHTML = '<div style="padding:24px;color:var(--red)">Failed to load data. Try refreshing.</div>'; overlay.style.display = 'none'; return; }
     } catch(e) { document.getElementById('grid').innerHTML = '<div style="padding:24px;color:var(--red)">Failed to load data and no cache available.</div>'; overlay.style.display = 'none'; return; }
   }
+  currentProject = 'qt';
   const qtVersions = VERSIONS.filter(v => v.type === 'qt');
   const frozen = qtVersions.find(v => /frozen/i.test(v.tag));
   currentVer = frozen ? frozen.id : (qtVersions.length ? qtVersions[qtVersions.length - 1].id : VERSIONS[0]?.id || '');
@@ -419,11 +423,20 @@ function pctColor(v) {
   return 'var(--red)';
 }
 function pctBg(v) {
-  if (v >= 90) return 'rgba(65,205,82,.12)';
-  if (v >= 70) return 'rgba(65,205,82,.08)';
-  if (v >= 40) return 'rgba(230,168,23,.12)';
-  if (v >= 1) return 'rgba(212,120,42,.12)';
-  return 'rgba(224,82,82,.12)';
+  const dark = document.documentElement.getAttribute('data-theme') === 'dark';
+  if (dark) {
+    if (v >= 90) return 'rgba(65,205,82,.12)';
+    if (v >= 70) return 'rgba(65,205,82,.08)';
+    if (v >= 40) return 'rgba(230,168,23,.12)';
+    if (v >= 1) return 'rgba(212,120,42,.12)';
+    return 'rgba(224,82,82,.12)';
+  }
+  // Light mode: solid backgrounds for better contrast
+  if (v >= 90) return '#d4f5dc';
+  if (v >= 70) return '#dff3e4';
+  if (v >= 40) return '#fef3d0';
+  if (v >= 1) return '#fce8d5';
+  return '#fdd';
 }
 function heatColor(v) {
   if (v < 0) return 'var(--border)';
@@ -462,16 +475,55 @@ function versionAvg(vid) {
   return avgs.length ? Math.round(avgs.reduce((a, b) => a + b, 0) / avgs.length) : 0;
 }
 
+function getProjectTypes() {
+  const types = new Set(VERSIONS.map(v => v.type));
+  const order = ['qt', 'creator', 'ifw'];
+  return order.filter(t => types.has(t));
+}
+function projectLabel(t) { return t === 'qt' ? 'Qt' : t === 'creator' ? 'Qt Creator' : 'IFW'; }
+
 function renderPills() {
-  document.getElementById('verPills').innerHTML = VERSIONS.map(v =>
-    `<div class="ver-pill${v.id === currentVer ? ' active' : ''}" onclick="setVersion('${v.id}')">${v.name}${v.tag ? ' <span class="tag">' + v.tag + '</span>' : ''} <span class="pct">${versionAvg(v.id)}%</span></div>`
+  // Project pills
+  const projects = getProjectTypes();
+  document.getElementById('projectPills').innerHTML = projects.map(t =>
+    `<div class="ver-pill${t === currentProject ? ' active' : ''}" onclick="setProject('${t}')">${projectLabel(t)}</div>`
   ).join('');
+
+  // Version pills filtered by project
+  const filtered = VERSIONS.filter(v => v.type === currentProject);
+  const isCompare = currentView === 'compare';
+  document.getElementById('verModeLabel').textContent = isCompare ? 'Select 2–4:' : '';
+
+  if (isCompare) {
+    document.getElementById('verPills').innerHTML = filtered.map(v =>
+      `<div class="ver-pill${compareVersions.includes(v.id) ? ' active' : ''}" onclick="toggleCompareVersion('${v.id}')">${v.name}${v.tag ? ' <span class="tag">' + v.tag + '</span>' : ''} <span class="pct">${versionAvg(v.id)}%</span></div>`
+    ).join('');
+  } else {
+    document.getElementById('verPills').innerHTML = filtered.map(v =>
+      `<div class="ver-pill${v.id === currentVer ? ' active' : ''}" onclick="setVersion('${v.id}')">${v.name}${v.tag ? ' <span class="tag">' + v.tag + '</span>' : ''} <span class="pct">${versionAvg(v.id)}%</span></div>`
+    ).join('');
+  }
+}
+
+function setProject(type) {
+  currentProject = type;
+  const filtered = VERSIONS.filter(v => v.type === type);
+  // Reset current version to best match in new project
+  if (!filtered.find(v => v.id === currentVer)) {
+    const frozen = filtered.find(v => /frozen/i.test(v.tag));
+    currentVer = frozen ? frozen.id : (filtered.length ? filtered[filtered.length - 1].id : '');
+  }
+  // Reset compare versions to last 2 in this project
+  if (filtered.length >= 2) compareVersions = [filtered[filtered.length - 2].id, filtered[filtered.length - 1].id];
+  else if (filtered.length === 1) compareVersions = [filtered[0].id];
+  renderPills(); render();
 }
 
 function setVersion(id) { currentVer = id; renderPills(); render(); }
 function setView(v) {
   currentView = v;
-  document.querySelectorAll('.view-tabs .btn').forEach((b, i) => b.classList.toggle('active', ['cards', 'heatmap', 'compare'][i] === v));
+  document.querySelectorAll('.view-tabs .btn').forEach((b, i) => b.classList.toggle('active', ['cards', 'heatmap', 'compare', 'templates'][i] === v));
+  renderPills();
   render();
 }
 
@@ -479,16 +531,8 @@ function toggleCompareVersion(id) {
   const idx = compareVersions.indexOf(id);
   if (idx >= 0) { if (compareVersions.length > 1) compareVersions.splice(idx, 1); }
   else { if (compareVersions.length >= 4) compareVersions.shift(); compareVersions.push(id); }
-  renderCompareVerPicker();
+  renderPills();
   render();
-}
-
-function renderCompareVerPicker() {
-  const el = document.getElementById('compareVerPicker');
-  el.className = 'compare-ver-picker' + (currentView === 'compare' ? ' show' : '');
-  el.innerHTML = '<label>Compare versions:</label>' + VERSIONS.map(v =>
-    `<span class="compare-ver-chip${compareVersions.includes(v.id) ? ' selected' : ''}" onclick="toggleCompareVersion('${v.id}')">${v.name}</span>`
-  ).join('');
 }
 
 function render() {
@@ -508,16 +552,15 @@ function render() {
     `<span class="stat-chip"><b>${allLangs.length}</b> <span>languages</span></span>` +
     `<span class="stat-chip"><b>${fullyTranslated}</b> <span>fully translated</span></span>`;
 
-  // Show/hide compare version picker
-  renderCompareVerPicker();
-
   document.getElementById('grid').style.display = currentView === 'cards' ? '' : 'none';
   document.getElementById('heatmapView').className = 'heatmap-container' + (currentView === 'heatmap' ? ' show' : '');
   document.getElementById('compareView').className = 'compare-container' + (currentView === 'compare' ? ' show' : '');
+  document.getElementById('templatesView').className = 'compare-container' + (currentView === 'templates' ? ' show' : '');
 
   if (currentView === 'cards') renderCards(langs, d);
   else if (currentView === 'heatmap') renderHeatmap(langs, d);
-  else renderCompare(langs);
+  else if (currentView === 'compare') renderCompare(langs);
+  else if (currentView === 'templates') renderTemplates();
 }
 
 function renderCards(langs, d) {
@@ -528,9 +571,8 @@ function renderCards(langs, d) {
     const modsHtml = Object.entries(mods).map(([mod, val]) => {
       const na = val < 0;
       const col = na ? '' : 'background:' + pctBg(val) + ';color:' + pctColor(val);
-      const tplLink = `<a class="tpl-link" href="${getTemplateUrl(currentVer, mod)}" target="_blank" title="Download ${mod} template">T</a>`;
-      if (na) return `<span class="mod na">${mod} n/a${tplLink}</span>`;
-      return `<a class="mod" style="${col}" href="${getTsUrl(currentVer, lang, mod)}" title="Download ${mod}_${lang}.ts (${val}%)" target="_blank">${mod} ${val}%${tplLink}</a>`;
+      if (na) return `<span class="mod na">${mod} n/a</span>`;
+      return `<a class="mod" style="${col}" href="${getTsUrl(currentVer, lang, mod)}" title="Download ${mod}_${lang}.ts (${val}%)" target="_blank">${mod} ${val}%</a>`;
     }).join('');
     const dlAll = Object.keys(mods).length > 1
       ? `<a href="${BASE + (VERSIONS.find(x=>x.id===currentVer)||{}).base}" target="_blank" style="font-size:11px;color:var(--text2);text-decoration:none;margin-left:auto" title="Browse all ${lang} catalogs for this version">⬇ All</a>`
@@ -554,9 +596,11 @@ function renderHeatmap(langs, d) {
     mods.forEach(mod => {
       const v = (d[lang] || {})[mod], val = v === undefined ? 0 : v;
       const displayVal = val < 0 ? 0 : val;
-      const bg = heatColor(displayVal);
+      const isMeta = /^meta$/i.test(mod);
+      const bg = isMeta ? 'var(--border)' : heatColor(displayVal);
       const txt = displayVal + '%';
-      html += `<div class="hm-cell" style="background:${bg}" title="${lang} / ${mod}: ${txt}">${displayVal <= 100 ? displayVal : ''}</div>`;
+      const extraStyle = isMeta ? 'opacity:.45;' : '';
+      html += `<div class="hm-cell" style="background:${bg};${extraStyle}" title="${lang} / ${mod}: ${txt}">${displayVal <= 100 ? displayVal : ''}</div>`;
     });
   });
   c.innerHTML = html + '</div>';
@@ -608,8 +652,8 @@ function renderCompare(langs) {
       const d = (DATA[v.id] || {})[lang];
       return d ? getAvg(d) : null;
     });
-    html += `<tr style="cursor:pointer" onclick="this.classList.toggle('expanded');let s=this.nextElementSibling;while(s&&s.dataset.parent==='${lang}'){s.style.display=s.style.display==='none'?'':'none';s=s.nextElementSibling}">`;
-    html += `<td class="lang-col" style="font-weight:700">${lang} <small style="color:var(--text2)">${langName(lang)}</small> <span style="font-size:10px;color:var(--text2)">▸</span></td>`;
+    html += `<tr style="cursor:pointer" onclick="this.classList.toggle('expanded');let a=this.querySelector('.expand-arrow');a.textContent=this.classList.contains('expanded')?'▲':'▼';let s=this.nextElementSibling;while(s&&s.dataset.parent==='${lang}'){s.style.display=s.style.display==='none'?'':'none';s=s.nextElementSibling}">`;
+    html += `<td class="lang-col" style="font-weight:700">${lang} <small style="color:var(--text2)">${langName(lang)}</small> <span class="expand-arrow" style="font-size:10px;color:var(--text2)">▼</span></td>`;
     avgs.forEach(avg => {
       html += `<td style="color:${avg !== null ? pctColor(avg) : 'var(--text2)'};font-weight:600">${avg !== null ? avg + '%' : '-'}</td>`;
     });
@@ -643,6 +687,25 @@ function renderCompare(langs) {
     });
   });
   c.innerHTML = html + `</tbody></table>`;
+}
+
+function renderTemplates() {
+  const c = document.getElementById('templatesView');
+  const d = DATA[currentVer] || {};
+  const allMods = new Set();
+  Object.values(d).forEach(m => Object.keys(m).forEach(k => allMods.add(k)));
+  const mods = [...allMods].sort();
+  const v = VERSIONS.find(x => x.id === currentVer);
+  const vname = v ? v.name : currentVer;
+  let html = `<h3 style="margin-bottom:12px;color:var(--text)">Templates for ${vname}</h3>`;
+  html += `<p style="font-size:13px;color:var(--text2);margin-bottom:16px">Untranslated template files (.ts) for each module. Use these as a starting point for a new translation.</p>`;
+  html += `<div style="display:flex;flex-wrap:wrap;gap:8px">`;
+  mods.forEach(mod => {
+    const url = getTemplateUrl(currentVer, mod);
+    html += `<a href="${url}" target="_blank" class="btn" style="text-decoration:none;font-size:13px">⬇ ${mod}_untranslated.ts</a>`;
+  });
+  html += `</div>`;
+  c.innerHTML = html;
 }
 
 function detectLang() {
