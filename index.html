@@ -4,15 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Qt Translation Dashboard</title>
+<!-- Flags: https://flagcdn.com (free, no API key) -->
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-
 :root{
   --qt-green:#41CD52;--qt-green-dark:#30a040;--qt-green-light:#5fd868;
   --qt-neon:#2CDE85;--qt-pine:#00414A;
   --green:#41CD52;--yellow:#e6a817;--red:#e05252;--orange:#d4782a;
 }
-
 [data-theme="light"]{
   --bg:#ffffff;--card:#ffffff;--border:#c4cdd5;--text:#00414A;--text2:#4a6068;
   --accent:#2CDE85;--header-bg:linear-gradient(135deg,#00414A 0%,#005a66 100%);
@@ -29,68 +28,48 @@
   --card-hover-shadow:0 4px 12px rgba(65,205,82,.2);
   --control-bg:#2a2a2a;--stats-bg:#1a3a1e;
 }
-
 body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,-apple-system,Helvetica,Arial,sans-serif;line-height:1.6;transition:background .3s,color .3s}
 a{color:var(--qt-pine);text-decoration:none}
 [data-theme="dark"] a{color:var(--accent)}
 a:hover{text-decoration:underline}
-
 .header{background:var(--header-bg);color:var(--header-text);padding:16px 24px;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.15)}
 .header-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
 .header h1{font-size:22px;font-weight:700;letter-spacing:-.3px;display:flex;align-items:center;gap:10px}
 .header h1 .qt-logo{display:inline-flex;align-items:center;gap:6px;font-weight:800}
 .header h1 .qt-logo span{background:#2CDE85;color:#00414A;border-radius:4px;padding:1px 7px;font-size:18px;font-weight:900;letter-spacing:-.5px}
 .header-actions{display:flex;gap:8px;align-items:center}
-
 .theme-toggle{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:6px;padding:5px 12px;cursor:pointer;font-size:14px;transition:.2s;display:flex;align-items:center;gap:4px}
 .theme-toggle:hover{background:rgba(255,255,255,.25)}
-
 .refresh-btn{padding:5px 12px;border-radius:6px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.1);color:#fff;cursor:pointer;font-size:13px;transition:.2s}
 .refresh-btn:hover{background:rgba(255,255,255,.2)}
 .refresh-btn.loading{opacity:.5;cursor:wait}
 .data-source{font-size:11px;color:rgba(255,255,255,.7);margin-left:4px}
 .data-source.live{color:#a0ffb0}
 .data-source.cached{color:#ffe9a0}
-
 .ver-pills{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:4px}
 .ver-pill{padding:4px 14px;border-radius:20px;font-size:13px;cursor:pointer;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.1);color:rgba(255,255,255,.85);transition:.2s}
 .ver-pill:hover{background:rgba(255,255,255,.2)}
-.ver-pill.active{background:#2CDE85;color:#00414A;border-color:#2CDE85;font-weight:600;outline:none;box-shadow:none}
+.ver-pill.active{background:#2CDE85;color:#00414A;border-color:#2CDE85;font-weight:600}
 .ver-pill.project-pill{padding:5px 18px;font-size:14px;font-weight:600;border-width:2px}
 .ver-pill.project-pill.active{background:#2CDE85;color:#00414A;border-color:#2CDE85;font-weight:700}
 .ver-pill .tag{margin-left:4px;opacity:.6;font-size:10px;font-style:italic}
-
-.controls-bar{background:var(--control-bg);border-bottom:2px solid var(--border);padding:10px 24px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;position:sticky;top:0;z-index:99}
+.controls-bar{background:var(--control-bg);border-bottom:2px solid var(--border);padding:10px 24px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;position:sticky;z-index:99}
 input[type=text],select{background:var(--input-bg);color:var(--text);border:1.5px solid var(--border);border-radius:6px;padding:7px 12px;font-size:14px;transition:border-color .2s}
 input[type=text]:focus,select:focus{outline:none;border-color:var(--qt-pine);box-shadow:0 0 0 3px rgba(0,65,74,.1)}
 [data-theme="dark"] input[type=text]:focus,[data-theme="dark"] select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(65,205,82,.15)}
 input[type=text]{width:220px}
 select{cursor:pointer}
-
 .stats{display:flex;gap:6px;margin-left:auto;font-size:12px;flex-wrap:wrap;align-items:center}
 .stat-chip{background:var(--stats-bg);border:1px solid var(--border);border-radius:16px;padding:3px 12px;display:flex;align-items:center;gap:4px;white-space:nowrap}
 .stat-chip b{color:var(--text);font-weight:700}
 .stat-chip span{color:var(--text2)}
-
 .btn{padding:5px 14px;border-radius:6px;border:1.5px solid var(--border);background:var(--card);color:var(--text);cursor:pointer;font-size:13px;transition:.2s;font-weight:500}
 .btn:hover{border-color:var(--qt-pine);color:var(--qt-pine)}
 [data-theme="dark"] .btn:hover{border-color:var(--accent);color:var(--accent)}
-.btn.active{background:var(--qt-pine);color:#fff;border-color:var(--qt-pine);outline:none;box-shadow:none}
-[data-theme="dark"] .btn.active{background:var(--accent);color:#000;border-color:var(--accent);outline:none;box-shadow:none}
+.btn.active{background:var(--qt-pine);color:#fff;border-color:var(--qt-pine)}
+[data-theme="dark"] .btn.active{background:var(--accent);color:#000;border-color:var(--accent)}
 .btn:focus,.btn:focus-visible,.btn.active:focus,.btn.active:focus-visible{outline:none;box-shadow:none}
-
-.your-lang{background:var(--accent);color:#fff;padding:3px 10px;border-radius:4px;font-size:12px;cursor:pointer;white-space:nowrap;font-weight:600}
-
 .view-tabs{display:flex;gap:4px}
-
-.compare-ver-picker{display:none;gap:6px;align-items:center;flex-wrap:wrap;padding:10px 24px;background:var(--control-bg);border-bottom:1px solid var(--border)}
-.compare-ver-picker.show{display:flex}
-.compare-ver-picker label{font-size:13px;font-weight:600;color:var(--text);margin-right:4px}
-.compare-ver-chip{padding:3px 12px;border-radius:16px;font-size:12px;cursor:pointer;border:1.5px solid var(--border);background:var(--card);color:var(--text);transition:.2s;user-select:none}
-.compare-ver-chip:hover{border-color:var(--qt-pine)}
-.compare-ver-chip.selected{background:var(--qt-pine);color:#fff;border-color:var(--qt-pine)}
-[data-theme="dark"] .compare-ver-chip.selected{background:var(--accent);color:#000;border-color:var(--accent)}
-
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:14px;padding:20px 24px}
 .card{background:var(--card);border:1.5px solid var(--border);border-radius:10px;padding:16px;transition:all .25s;box-shadow:var(--shadow)}
 .card:hover{border-color:var(--hover-border);box-shadow:var(--card-hover-shadow);transform:translateY(-1px)}
@@ -109,40 +88,38 @@ select{cursor:pointer}
 [data-theme="dark"] .mod:hover{border-color:var(--accent)}
 .mod.na{opacity:.35;cursor:default}
 .mod.na:hover{border-color:transparent;transform:none}
+.flag{width:16px;height:12px;border-radius:2px;vertical-align:middle;margin-right:4px}
 .heatmap-container{padding:20px 24px;display:none}
 .heatmap-container.show{display:block}
 .heatmap{display:grid;gap:2px;font-size:11px}
 .hm-cell{width:100%;aspect-ratio:1;border-radius:3px;display:flex;align-items:center;justify-content:center;font-weight:600;cursor:default;min-height:20px}
-.hm-label{font-size:11px;color:var(--text2);text-align:center;padding-right:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;justify-content:center}
-.hm-header{font-size:10px;color:var(--text2);writing-mode:vertical-lr;transform:rotate(180deg);height:120px;overflow:hidden;display:flex;align-items:center;justify-content:flex-start}
-
+.hm-label{font-size:11px;color:var(--text2);text-align:right;padding-right:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;justify-content:flex-end;gap:3px}
+.hm-header{font-size:10px;color:var(--text2);writing-mode:vertical-lr;transform:rotate(180deg);height:160px;overflow:hidden;display:flex;align-items:center;justify-content:flex-end;padding-bottom:4px}
 .compare-container{padding:20px 24px;display:none}
 .compare-container.show{display:block}
 .compare-table{width:100%;border-collapse:collapse;font-size:13px}
 .compare-table th,.compare-table td{padding:8px 12px;border:1px solid var(--border);text-align:center}
-.compare-table th{background:var(--control-bg);position:sticky;top:96px;font-weight:600;color:var(--qt-pine)}
+.compare-table th{background:var(--control-bg);position:sticky;font-weight:600;color:var(--qt-pine)}
 [data-theme="dark"] .compare-table th{color:var(--text)}
 .compare-table tr:hover td{background:var(--badge-bg)}
 .compare-table .up{color:var(--green);font-weight:600}
 .compare-table .down{color:var(--red);font-weight:600}
 .compare-table .same{color:var(--text2)}
-.compare-table .lang-col{text-align:left;font-weight:600}
-.compare-table .mod-col{text-align:left;font-weight:500;color:var(--text2);font-size:12px;padding-left:24px}
-
+.compare-table .lang-row td:first-child{font-weight:700}
+.compare-table .mod-row td:first-child{font-weight:400;color:var(--text2);font-size:12px;padding-left:28px}
+.compare-table .mod-row td{font-size:12px;background:var(--bg);opacity:.85}
 .loading-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:var(--overlay-bg);display:flex;align-items:center;justify-content:center;z-index:1000;flex-direction:column;gap:16px}
 .loading-overlay .spinner{width:44px;height:44px;border:3px solid var(--border);border-top-color:var(--qt-pine);border-radius:50%;animation:spin .8s linear infinite}
 [data-theme="dark"] .loading-overlay .spinner{border-top-color:var(--accent)}
 .loading-overlay .load-text{color:var(--text2);font-size:15px}
 @keyframes spin{to{transform:rotate(360deg)}}
-
 @media(max-width:600px){
-.grid{grid-template-columns:1fr;padding:12px}
-.header{padding:12px 14px}
-.controls-bar{padding:8px 14px}
-input[type=text]{width:100%}
-.controls-bar{flex-direction:column;align-items:stretch}
-.ver-pills{justify-content:center}
-.stats{margin-left:0}
+  .grid{grid-template-columns:1fr;padding:12px}
+  .header{padding:12px 14px}
+  .controls-bar{padding:8px 14px;flex-direction:column;align-items:stretch}
+  input[type=text]{width:100%}
+  .ver-pills{justify-content:center}
+  .stats{margin-left:0}
 }
 </style>
 </head>
@@ -152,7 +129,7 @@ input[type=text]{width:100%}
 <div class="load-text">Loading translation data…</div>
 </div>
 
-<div class="header">
+<div class="header" id="mainHeader">
 <div class="header-top">
 <h1><span class="qt-logo"><span>Qt</span></span> Translation Dashboard
 <button class="refresh-btn" id="refreshBtn" onclick="refreshData()" title="Fetch latest data from l10n-files.qt.io">⟳ Refresh</button>
@@ -171,7 +148,7 @@ input[type=text]{width:100%}
 </div>
 </div>
 
-<div class="controls-bar">
+<div class="controls-bar" id="controlsBar">
 <input type="text" id="search" placeholder="🔍 Search language…">
 <select id="sortBy"><option value="code">Sort: Alphabetically</option><option value="pct-desc">Sort: Most complete first</option><option value="pct-asc">Sort: Least complete first</option></select>
 <div class="view-tabs">
@@ -194,271 +171,299 @@ input[type=text]{width:100%}
 <div class="compare-container" id="templatesView"></div>
 
 <script>
-function initTheme(){
-  const saved = localStorage.getItem('qt-dash-theme');
-  const theme = saved || 'light';
+var LOCALE_TO_COUNTRY = {
+  ar:'SA',bg:'BG',ca:'ES',cs:'CZ',da:'DK',de:'DE',en:'GB',es:'ES',
+  fa:'IR',fi:'FI',fr:'FR',gd:'GB',gl:'ES',he:'IL',hr:'HR',hu:'HU',
+  it:'IT',ja:'JP',ka:'GE',ko:'KR',lg:'UG',lt:'LT',lv:'LV',nl:'NL',
+  nn:'NO',pl:'PL',pt_BR:'BR',pt_PT:'PT',ro:'RO',ru:'RU',sk:'SK',
+  sl:'SI',sq:'AL',sv:'SE',ta:'IN',th:'TH',tr:'TR',uk:'UA',vi:'VN',
+  zh_CN:'CN',zh_TW:'TW'
+};
+
+function flagImg(code) {
+  var cc = LOCALE_TO_COUNTRY[code] || LOCALE_TO_COUNTRY[code.split('_')[0]];
+  if (!cc) return '';
+  return '<img class="flag" src="https://flagcdn.com/w20/' + cc.toLowerCase() + '.png" alt="' + cc + '" loading="lazy">';
+}
+
+function initTheme() {
+  var theme = localStorage.getItem('qt-dash-theme') || 'light';
   document.documentElement.setAttribute('data-theme', theme);
   updateThemeBtn(theme);
 }
-function toggleTheme(){
-  const cur = document.documentElement.getAttribute('data-theme');
-  const next = cur === 'light' ? 'dark' : 'light';
+
+function toggleTheme() {
+  var cur = document.documentElement.getAttribute('data-theme');
+  var next = cur === 'light' ? 'dark' : 'light';
   document.documentElement.setAttribute('data-theme', next);
   localStorage.setItem('qt-dash-theme', next);
   updateThemeBtn(next);
   render();
 }
-function updateThemeBtn(theme){
-  const btn = document.getElementById('themeToggle');
-  btn.textContent = theme === 'light' ? '🌙 Dark' : '☀️ Light';
+
+function updateThemeBtn(theme) {
+  document.getElementById('themeToggle').textContent = theme === 'light' ? '🌙 Dark' : '☀️ Light';
 }
+
+function updateStickyOffsets() {
+  var h = document.getElementById('mainHeader').offsetHeight;
+  document.getElementById('controlsBar').style.top = h + 'px';
+}
+
 initTheme();
 
-const BASE = 'https://l10n-files.qt.io/l10n-files/';
-const JSON_URL = 'https://l10n-files.qt.io/l10n-files/l10n-status.json';
+var BASE = 'https://l10n-files.qt.io/l10n-files/';
+var JSON_URL = 'https://l10n-files.qt.io/l10n-files/l10n-status.json';
+var LANG_NAMES = {};
+var JSON_FILES = {};
+var JSON_TEMPLATES = {};
+var VERSIONS = [];
+var DATA = {};
+var currentVer = '';
+var currentView = 'cards';
+var searchTerm = '';
+var sortMode = 'code';
+var compareVersions = [];
+var currentProject = 'qt';
+var CORS_PROXIES = [
+  function(u){return u},
+  function(u){return 'https://api.allorigins.win/raw?url='+encodeURIComponent(u)},
+  function(u){return 'https://corsproxy.io/?'+encodeURIComponent(u)}
+];
 
-let LANG_NAMES = {};
-let JSON_FILES = {};
-let JSON_TEMPLATES = {};
-
-async function loadLangNames() {
-  try {
-    const resp = await fetch('lang-names.json');
-    if (resp.ok) LANG_NAMES = await resp.json();
-  } catch(e) {}
+function loadLangNames() {
+  return fetch('lang-names.json').then(function(r){
+    if (r.ok) return r.json();
+    return {};
+  }).then(function(j){ LANG_NAMES = j; }).catch(function(){});
 }
 
 function langName(code) {
   if (LANG_NAMES[code]) return LANG_NAMES[code];
-  try { return new Intl.DisplayNames(['en'], { type: 'language' }).of(code.replace('_', '-')); } catch(e) {}
+  try { return new Intl.DisplayNames(['en'],{type:'language'}).of(code.replace('_','-')); } catch(e){}
   return '';
 }
 
-const CORS_PROXIES = [
-  url => url,
-  url => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url),
-  url => 'https://corsproxy.io/?' + encodeURIComponent(url),
-];
-
-let VERSIONS = [];
-let DATA = {};
-let currentVer = '';
-let currentView = 'cards';
-let searchTerm = '';
-let sortMode = 'code';
-let compareVersions = [];
-let currentProject = 'qt';
-
 function parseL10nPage(html) {
-  const versions = [];
-  const data = {};
-
-  const hrefDirs = new Set();
-  const hrefRegex = /href="([^"]+\.ts)"/g;
-  let hm;
+  var versions = [], data = {};
+  var hrefDirs = new Set();
+  var hrefRegex = /href="([^"]+\.ts)"/g, hm;
   while ((hm = hrefRegex.exec(html)) !== null) {
-    const dir = hm[1].split('/')[0];
+    var dir = hm[1].split('/')[0];
     if (dir) hrefDirs.add(dir);
   }
-
-  const text = html
+  var text = html
     .replace(/<br\s*\/?>/gi, '\n')
     .replace(/<[^>]+>/g, ' ')
     .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&nbsp;/g, ' ').replace(/&#\d+;/g, ' ');
-
-  const sectionRegex = /\n\s*(Qt Creator \d+\.\d+|Qt Installer Framework \d+\.\d+|Qt \d+\.\d+)\s*\n/g;
-  const matches = [];
-  let match;
+  var sectionRegex = /\n\s*(Qt Creator \d+\.\d+|Qt Installer Framework \d+\.\d+|Qt \d+\.\d+)\s*\n/g;
+  var matches = [], match;
   while ((match = sectionRegex.exec(text)) !== null) {
-    matches.push({ title: match[1].trim(), index: match.index + match[0].length });
+    matches.push({title:match[1].trim(), index:match.index+match[0].length});
   }
-  const sections = [];
-  for (let i = 0; i < matches.length; i++) {
-    const start = matches[i].index;
-    const end = i + 1 < matches.length ? matches[i + 1].index : text.length;
-    sections.push({ title: matches[i].title, body: text.substring(start, end) });
+  var sections = [];
+  for (var i=0; i<matches.length; i++) {
+    var start = matches[i].index;
+    var end = i+1<matches.length ? matches[i+1].index : text.length;
+    sections.push({title:matches[i].title, body:text.substring(start,end)});
   }
 
-  function findBaseDir(sectionBody, type) {
-    const langMatch = sectionBody.match(/\b([a-z]{2}(?:_[A-Z]{2})?)\s*[\(:]/);
+  function findBaseDir(body, type) {
+    var langMatch = body.match(/\b([a-z]{2}(?:_[A-Z]{2})?)\s*[\(:]/);
     if (!langMatch) return null;
-    const sampleLang = langMatch[1];
-    for (const dir of hrefDirs) {
-      if (type === 'creator' && dir.startsWith('creator')) {
-        const re = new RegExp('href="' + dir + '/qtcreator_' + sampleLang + '\\.ts"');
-        if (re.test(html)) return dir;
-      } else if (type === 'ifw' && dir.startsWith('ifw')) {
-        const re = new RegExp('href="' + dir + '/ifw_' + sampleLang + '\\.ts"');
-        if (re.test(html)) return dir;
-      } else if (type === 'qt' && dir.startsWith('qt-')) {
-        const re = new RegExp('href="' + dir + '/qtbase_' + sampleLang + '\\.ts"');
-        if (re.test(html)) return dir;
+    var sampleLang = langMatch[1];
+    for (var d of hrefDirs) {
+      if (type==='creator' && d.startsWith('creator')) {
+        if (new RegExp('href="'+d+'/qtcreator_'+sampleLang+'\\.ts"').test(html)) return d;
+      } else if (type==='ifw' && d.startsWith('ifw')) {
+        if (new RegExp('href="'+d+'/ifw_'+sampleLang+'\\.ts"').test(html)) return d;
+      } else if (type==='qt' && d.startsWith('qt-')) {
+        if (new RegExp('href="'+d+'/qtbase_'+sampleLang+'\\.ts"').test(html)) return d;
       }
     }
     return null;
   }
 
-  for (let si = 0; si < sections.length; si++) {
-    const title = sections[si].title;
-    const body = sections[si].body;
-    let id, name, tag, type, base;
-
+  for (var si=0; si<sections.length; si++) {
+    var title = sections[si].title, body = sections[si].body;
+    var id, name, tag, type, base;
     if (title.startsWith('Qt Creator')) {
-      const ver = title.replace('Qt Creator ', '');
-      type = 'creator'; name = title;
-      const dir = findBaseDir(body, type);
-      id = dir || ('qtcreator-' + ver.replace('.', ''));
-      base = (dir || id) + '/';
-      tag = /under active development/i.test(body) ? 'Dev' : /stable/i.test(body) ? 'Stable' : '';
+      var ver = title.replace('Qt Creator ','');
+      type='creator'; name=title;
+      var bdir = findBaseDir(body,type);
+      id = bdir || ('qtcreator-'+ver.replace('.',''));
+      base = (bdir||id)+'/';
+      tag = /under active development/i.test(body)?'Dev': /stable/i.test(body)?'Stable':'';
     } else if (title.startsWith('Qt Installer Framework')) {
-      const ver = title.replace('Qt Installer Framework ', '');
-      type = 'ifw'; name = 'IFW ' + ver;
-      const dir = findBaseDir(body, type);
-      id = dir || ('ifw-' + ver.replace('.', ''));
-      base = (dir || id) + '/';
-      tag = /stable/i.test(body) ? 'Stable' : '';
+      var ver2 = title.replace('Qt Installer Framework ','');
+      type='ifw'; name='IFW '+ver2;
+      var bdir2 = findBaseDir(body,type);
+      id = bdir2 || ('ifw-'+ver2.replace('.',''));
+      base = (bdir2||id)+'/';
+      tag = /stable/i.test(body)?'Stable':'';
     } else {
-      const ver = title.replace('Qt ', '');
-      type = 'qt'; name = title;
-      const dir = findBaseDir(body, type);
-      id = dir || ('qt-' + ver.replace('.', ''));
-      base = (dir || id) + '/';
-      tag = /old stable/i.test(body) ? 'Old stable' : /long term supported/i.test(body) ? 'LTS' :
-        /strings are hard-frozen|strings frozen/i.test(body) ? 'Strings frozen' :
-        /stable/i.test(body) ? 'Stable' : /development/i.test(body) ? 'Dev' : '';
+      var ver3 = title.replace('Qt ','');
+      type='qt'; name=title;
+      var bdir3 = findBaseDir(body,type);
+      id = bdir3 || ('qt-'+ver3.replace('.',''));
+      base = (bdir3||id)+'/';
+      tag = /old stable/i.test(body)?'Old stable': /long term supported/i.test(body)?'LTS':
+        /strings are hard-frozen|strings frozen/i.test(body)?'Strings frozen':
+        /stable/i.test(body)?'Stable': /development/i.test(body)?'Dev':'';
     }
-
-    versions.push({ id, name, tag, base, type });
+    versions.push({id:id, name:name, tag:tag, base:base, type:type});
     data[id] = {};
-
-    if (type === 'creator' || type === 'ifw') {
-      const langRegex = /\b([a-z]{2}(?:_[A-Z]{2})?)\s*\((\d+|n\/a)%?\)/g;
-      let m;
-      while ((m = langRegex.exec(body)) !== null) {
-        const lang = m[1], val = m[2] === 'n/a' ? -1 : parseInt(m[2]);
-        data[id][lang] = type === 'creator' ? { qtcreator: val } : { ifw: val };
+    if (type==='creator' || type==='ifw') {
+      var langRegex = /\b([a-z]{2}(?:_[A-Z]{2})?)\s*\((\d+|n\/a)%?\)/g, m;
+      while ((m=langRegex.exec(body))!==null) {
+        var lang=m[1], val=m[2]==='n/a'?-1:parseInt(m[2]);
+        data[id][lang] = type==='creator' ? {qtcreator:val} : {ifw:val};
       }
     } else {
-      for (const line of body.split('\n')) {
-        const lineMatch = line.match(/^\s*([a-z]{2}(?:_[A-Z]{2})?)\s*:\s*(.+)/);
-        if (!lineMatch) continue;
-        const lang = lineMatch[1], rest = lineMatch[2], mods = {};
-        const modRegex = /(\w+)\s*\((\d+|n\/a)%?\)/g;
-        let mm;
-        while ((mm = modRegex.exec(rest)) !== null) {
-          if (mm[1] === 'Template' || mm[1] === 'Templates') continue;
-          mods[mm[1]] = mm[2] === 'n/a' ? -1 : parseInt(mm[2]);
+      body.split('\n').forEach(function(line){
+        var lm = line.match(/^\s*([a-z]{2}(?:_[A-Z]{2})?)\s*:\s*(.+)/);
+        if (!lm) return;
+        var lang=lm[1], rest=lm[2], mods={};
+        var modRegex=/(\w+)\s*\((\d+|n\/a)%?\)/g, mm;
+        while ((mm=modRegex.exec(rest))!==null) {
+          if (mm[1]==='Template'||mm[1]==='Templates') continue;
+          mods[mm[1]] = mm[2]==='n/a'?-1:parseInt(mm[2]);
         }
-        if (Object.keys(mods).length > 0) data[id][lang] = mods;
-      }
+        if (Object.keys(mods).length) data[id][lang]=mods;
+      });
     }
   }
-  return { versions, data };
+  return {versions:versions, data:data};
 }
 
-async function fetchHTML() {
-  for (const proxyFn of CORS_PROXIES) {
-    try {
-      const url = proxyFn(BASE);
-      const resp = await fetch(url, { signal: AbortSignal.timeout(10000) });
-      if (!resp.ok) continue;
-      const html = await resp.text();
-      if (html.length < 1000) continue;
-      return { html, live: true };
-    } catch (e) { continue; }
-  }
-  return null;
-}
-
-async function fetchJSON() {
-  for (const proxyFn of CORS_PROXIES) {
-    try {
-      const url = proxyFn(JSON_URL);
-      const resp = await fetch(url, { signal: AbortSignal.timeout(8000) });
-      if (!resp.ok) continue;
-      const json = await resp.json();
-      if (!json.versions || !json.data) continue;
-      const versions = json.versions.map(v => {
-        let tag = '';
-        const s = v.state;
-        if (s === 'old') tag = 'Old stable';
-        else if (s === 'lts') tag = 'LTS';
-        else if (s === 'hard') tag = 'Strings frozen';
-        else if (s === 'maint') tag = 'Stable';
-        else if (s === 'soft') tag = 'Soft freeze';
-        else if (s === 'dev') tag = 'Dev';
-        return { id: v.id, name: v.name, tag, base: v.id + '/', type: v.type };
+function fetchHTML() {
+  var i = 0;
+  function tryNext() {
+    if (i >= CORS_PROXIES.length) return Promise.resolve(null);
+    var url = CORS_PROXIES[i++](BASE);
+    return fetch(url, {signal:AbortSignal.timeout(10000)}).then(function(r){
+      if (!r.ok) return tryNext();
+      return r.text().then(function(html){
+        return html.length < 1000 ? tryNext() : {html:html, live:true};
       });
-      if (json.files) JSON_FILES = json.files;
-      if (json.templates) JSON_TEMPLATES = json.templates;
-      return { versions, data: json.data };
-    } catch(e) { continue; }
+    }).catch(function(){ return tryNext(); });
   }
-  return null;
+  return tryNext();
 }
 
-async function loadData() {
-  const overlay = document.getElementById('loadingOverlay');
-  await loadLangNames();
-
-  let parsed = await fetchJSON();
-  let live = !!parsed;
-  if (!parsed) {
-    const result = await fetchHTML();
-    if (result) { parsed = parseL10nPage(result.html); live = true; }
+function fetchJSON() {
+  var i = 0;
+  function tryNext() {
+    if (i >= CORS_PROXIES.length) return Promise.resolve(null);
+    var url = CORS_PROXIES[i++](JSON_URL);
+    return fetch(url, {signal:AbortSignal.timeout(8000)}).then(function(r){
+      if (!r.ok) return tryNext();
+      return r.json().then(function(json){
+        if (!json.versions || !json.data) return tryNext();
+        var versions = json.versions.map(function(v){
+          var tag = '';
+          if (v.state==='old') tag='Old stable';
+          else if (v.state==='lts') tag='LTS';
+          else if (v.state==='hard') tag='Strings frozen';
+          else if (v.state==='maint') tag='Stable';
+          else if (v.state==='soft') tag='Soft freeze';
+          else if (v.state==='dev') tag='Dev';
+          return {id:v.id, name:v.name, tag:tag, base:v.id+'/', type:v.type};
+        });
+        if (json.files) JSON_FILES = json.files;
+        if (json.templates) JSON_TEMPLATES = json.templates;
+        return {versions:versions, data:json.data};
+      });
+    }).catch(function(){ return tryNext(); });
   }
+  return tryNext();
+}
 
-  if (parsed) {
-    VERSIONS = parsed.versions; DATA = parsed.data;
-    try { localStorage.setItem('qt-l10n-data', JSON.stringify({ versions: VERSIONS, data: DATA, ts: Date.now() })); } catch(e) {}
-    showDataSource(live);
-  } else {
-    try {
-      const cached = JSON.parse(localStorage.getItem('qt-l10n-data'));
-      if (cached?.versions?.length) { VERSIONS = cached.versions; DATA = cached.data; showDataSource(false, cached.ts); }
-      else { document.getElementById('grid').innerHTML = '<div style="padding:24px;color:var(--red)">Failed to load data. Try refreshing.</div>'; overlay.style.display = 'none'; return; }
-    } catch(e) { document.getElementById('grid').innerHTML = '<div style="padding:24px;color:var(--red)">Failed to load data and no cache available.</div>'; overlay.style.display = 'none'; return; }
-  }
-  currentProject = 'qt';
-  const qtVersions = VERSIONS.filter(v => v.type === 'qt');
-  const frozen = qtVersions.find(v => /frozen/i.test(v.tag));
-  currentVer = frozen ? frozen.id : (qtVersions.length ? qtVersions[qtVersions.length - 1].id : VERSIONS[0]?.id || '');
-  if (qtVersions.length >= 2) compareVersions = [qtVersions[qtVersions.length - 2].id, qtVersions[qtVersions.length - 1].id];
-  else if (qtVersions.length === 1) compareVersions = [qtVersions[0].id];
-  initUI();
-  overlay.style.display = 'none';
+function loadData() {
+  var overlay = document.getElementById('loadingOverlay');
+  loadLangNames().then(function(){
+    return fetchJSON();
+  }).then(function(parsed){
+    var live = !!parsed;
+    if (!parsed) {
+      return fetchHTML().then(function(result){
+        if (result) return {parsed:parseL10nPage(result.html), live:true};
+        return {parsed:null, live:false};
+      });
+    }
+    return {parsed:parsed, live:live};
+  }).then(function(r){
+    var parsed = r.parsed, live = r.live;
+    if (parsed) {
+      VERSIONS = parsed.versions;
+      DATA = parsed.data;
+      try { localStorage.setItem('qt-l10n-data', JSON.stringify({versions:VERSIONS, data:DATA, ts:Date.now()})); } catch(e){}
+      showDataSource(live);
+    } else {
+      try {
+        var cached = JSON.parse(localStorage.getItem('qt-l10n-data'));
+        if (cached && cached.versions && cached.versions.length) {
+          VERSIONS = cached.versions; DATA = cached.data;
+          showDataSource(false, cached.ts);
+        } else {
+          document.getElementById('grid').innerHTML = '<div style="padding:24px;color:var(--red)">Failed to load data. Try refreshing.</div>';
+          overlay.style.display = 'none';
+          return;
+        }
+      } catch(e) {
+        document.getElementById('grid').innerHTML = '<div style="padding:24px;color:var(--red)">Failed to load data and no cache available.</div>';
+        overlay.style.display = 'none';
+        return;
+      }
+    }
+    currentProject = 'qt';
+    var qtVersions = VERSIONS.filter(function(v){return v.type==='qt'});
+    var frozen = qtVersions.find(function(v){return /frozen/i.test(v.tag)});
+    currentVer = frozen ? frozen.id : (qtVersions.length ? qtVersions[qtVersions.length-1].id : (VERSIONS[0]||{}).id||'');
+    if (qtVersions.length >= 2) compareVersions = [qtVersions[qtVersions.length-2].id, qtVersions[qtVersions.length-1].id];
+    else if (qtVersions.length === 1) compareVersions = [qtVersions[0].id];
+    initUI();
+    overlay.style.display = 'none';
+  });
 }
 
 function showDataSource(live, ts) {
-  const el = document.getElementById('dataSource');
-  if (live) { el.textContent = '● Live data'; el.className = 'data-source live'; }
-  else { el.textContent = '● Cached (' + (ts ? new Date(ts).toLocaleString() : '?') + ')'; el.className = 'data-source cached'; }
+  var el = document.getElementById('dataSource');
+  if (live) { el.textContent = '\u25cf Live data'; el.className = 'data-source live'; }
+  else { el.textContent = '\u25cf Cached (' + (ts ? new Date(ts).toLocaleString() : '?') + ')'; el.className = 'data-source cached'; }
 }
 
-async function refreshData() {
-  const btn = document.getElementById('refreshBtn');
+function refreshData() {
+  var btn = document.getElementById('refreshBtn');
   btn.classList.add('loading'); btn.textContent = '⟳ Loading…';
-  const result = await fetchHTML();
-  if (result) {
-    const parsed = parseL10nPage(result.html);
-    VERSIONS = parsed.versions; DATA = parsed.data;
-    try { localStorage.setItem('qt-l10n-data', JSON.stringify({ versions: VERSIONS, data: DATA, ts: Date.now() })); } catch(e) {}
-    showDataSource(true); renderPills(); render();
-  } else { alert('Failed to fetch. CORS may be blocking.'); }
-  btn.classList.remove('loading'); btn.textContent = '⟳ Refresh';
+  fetchHTML().then(function(result){
+    if (result) {
+      var parsed = parseL10nPage(result.html);
+      VERSIONS = parsed.versions; DATA = parsed.data;
+      try { localStorage.setItem('qt-l10n-data', JSON.stringify({versions:VERSIONS, data:DATA, ts:Date.now()})); } catch(e){}
+      showDataSource(true); renderPills(); render();
+    } else {
+      alert('Failed to fetch. CORS may be blocking.');
+    }
+    btn.classList.remove('loading'); btn.textContent = '⟳ Refresh';
+  });
 }
 
 function getAvg(mods, totalModCount) {
-  const v = Object.values(mods).filter(x => x >= 0);
-  if (!v.length) return 0;
-  const sum = v.reduce((a, b) => a + b, 0);
-  const divisor = totalModCount && totalModCount > v.length ? totalModCount : v.length;
+  var vals = Object.values(mods).filter(function(x){return x>=0});
+  if (!vals.length) return 0;
+  var sum = vals.reduce(function(a,b){return a+b},0);
+  var divisor = (totalModCount && totalModCount > vals.length) ? totalModCount : vals.length;
   return Math.round(sum / divisor);
 }
+
 function getAllModsForVersion(vid) {
-  const d = DATA[vid]; if (!d) return new Set();
-  const mods = new Set();
-  Object.values(d).forEach(m => Object.keys(m).forEach(k => { if ((m[k] || 0) >= 0) mods.add(k); }));
+  var d = DATA[vid];
+  if (!d) return new Set();
+  var mods = new Set();
+  Object.values(d).forEach(function(m){
+    Object.keys(m).forEach(function(k){ if ((m[k]||0)>=0) mods.add(k); });
+  });
   return mods;
 }
 
@@ -469,357 +474,363 @@ function pctColor(v) {
   if (v >= 1) return 'var(--orange)';
   return 'var(--red)';
 }
+
 function pctBg(v) {
-  const dark = document.documentElement.getAttribute('data-theme') === 'dark';
+  var dark = document.documentElement.getAttribute('data-theme') === 'dark';
   if (dark) {
-    // Pre-multiplied solid colors (no alpha) on dark #2a2a2a background
     if (v >= 90) return '#2f3e31';
     if (v >= 70) return '#2d362e';
     if (v >= 40) return '#3b3527';
     if (v >= 1) return '#3a3028';
     return '#3a2a2a';
   }
-  // Light mode: desaturated ~30% more
-  if (v >= 90) return '#e4f5e8';
-  if (v >= 70) return '#e9f3ec';
-  if (v >= 40) return '#f6f0dc';
-  if (v >= 1) return '#f5ebe0';
-  return '#f5e0e0';
+  if (v >= 90) return '#d0ecd6';
+  if (v >= 70) return '#d6e8da';
+  if (v >= 40) return '#ede4c4';
+  if (v >= 1) return '#ebdcc8';
+  return '#ebc8c8';
 }
+
 function heatColor(v) {
   if (v < 0) return 'var(--border)';
   if (v === 0) return 'rgba(224,82,82,.4)';
-  const r = Math.round(224 - (224 - 65) * (v / 100));
-  const g = Math.round(82 + (205 - 82) * (v / 100));
-  const b = Math.round(82 - 30 + 30 * (v / 100));
-  return `rgba(${r},${g},${b},0.5)`;
+  var r = Math.round(224-(224-65)*(v/100));
+  var g = Math.round(82+(205-82)*(v/100));
+  var b = Math.round(52+(52-52)*(v/100));
+  return 'rgba('+r+','+g+','+b+',0.5)';
 }
 
 function getTsUrl(ver, lang, mod) {
-  if (JSON_FILES[ver] && JSON_FILES[ver][lang] && JSON_FILES[ver][lang][mod]) {
+  if (JSON_FILES[ver] && JSON_FILES[ver][lang] && JSON_FILES[ver][lang][mod])
     return BASE + JSON_FILES[ver][lang][mod];
-  }
-  const v = VERSIONS.find(x => x.id === ver);
+  var v = VERSIONS.find(function(x){return x.id===ver});
   if (!v) return '#';
-  if (v.type === 'creator') return BASE + v.base + 'qtcreator_' + lang + '.ts';
-  if (v.type === 'ifw') return BASE + v.base + 'ifw_' + lang + '.ts';
-  return BASE + v.base + mod + '_' + lang + '.ts';
+  if (v.type==='creator') return BASE+v.base+'qtcreator_'+lang+'.ts';
+  if (v.type==='ifw') return BASE+v.base+'ifw_'+lang+'.ts';
+  return BASE+v.base+mod+'_'+lang+'.ts';
 }
 
 function getTemplateUrl(ver, mod) {
-  if (JSON_TEMPLATES[ver] && JSON_TEMPLATES[ver][mod]) {
+  if (JSON_TEMPLATES[ver] && JSON_TEMPLATES[ver][mod])
     return BASE + JSON_TEMPLATES[ver][mod];
-  }
-  const v = VERSIONS.find(x => x.id === ver);
+  var v = VERSIONS.find(function(x){return x.id===ver});
   if (!v) return '#';
-  if (v.type === 'creator') return BASE + v.base + 'qtcreator_untranslated.ts';
-  if (v.type === 'ifw') return BASE + v.base + 'ifw_untranslated.ts';
-  return BASE + v.base + mod + '_untranslated.ts';
-}
-
-function versionAvg(vid) {
-  const d = DATA[vid]; if (!d) return 0;
-  const totalMods = getAllModsForVersion(vid).size;
-  const avgs = Object.values(d).map(m => getAvg(m, totalMods));
-  return avgs.length ? Math.round(avgs.reduce((a, b) => a + b, 0) / avgs.length) : 0;
+  if (v.type==='creator') return BASE+v.base+'qtcreator_untranslated.ts';
+  if (v.type==='ifw') return BASE+v.base+'ifw_untranslated.ts';
+  return BASE+v.base+mod+'_untranslated.ts';
 }
 
 function getProjectTypes() {
-  const types = new Set(VERSIONS.map(v => v.type));
-  const order = ['qt', 'creator', 'ifw'];
-  return order.filter(t => types.has(t));
+  var types = new Set(VERSIONS.map(function(v){return v.type}));
+  return ['qt','creator','ifw'].filter(function(t){return types.has(t)});
 }
-function projectLabel(t) { return t === 'qt' ? 'Qt' : t === 'creator' ? 'Qt Creator' : 'IFW'; }
+
+function projectLabel(t) {
+  return t==='qt' ? 'Qt' : t==='creator' ? 'Qt Creator' : 'IFW';
+}
 
 function renderPills() {
-  const projects = getProjectTypes();
-  document.getElementById('projectPills').innerHTML = projects.map(t =>
-    `<div class="ver-pill project-pill${t === currentProject ? ' active' : ''}" onclick="setProject('${t}')">${projectLabel(t)}</div>`
-  ).join('');
+  var projects = getProjectTypes();
+  document.getElementById('projectPills').innerHTML = projects.map(function(t){
+    return '<div class="ver-pill project-pill'+(t===currentProject?' active':'')+'" onclick="setProject(\''+t+'\')">'+projectLabel(t)+'</div>';
+  }).join('');
 
-  const filtered = VERSIONS.filter(v => v.type === currentProject);
-  const isCompare = currentView === 'compare';
-  document.getElementById('verModeLabel').textContent = isCompare ? 'Select 2–4:' : '';
+  var filtered = VERSIONS.filter(function(v){return v.type===currentProject});
+  var isCompare = currentView === 'compare';
+  document.getElementById('verModeLabel').textContent = isCompare ? 'Select 2\u20134:' : '';
 
   if (isCompare) {
-    document.getElementById('verPills').innerHTML = filtered.map(v =>
-      `<div class="ver-pill${compareVersions.includes(v.id) ? ' active' : ''}" onclick="toggleCompareVersion('${v.id}')">${v.name}${v.tag ? ' <span class="tag">' + v.tag + '</span>' : ''}</div>`
-    ).join('');
+    document.getElementById('verPills').innerHTML = filtered.map(function(v){
+      return '<div class="ver-pill'+(compareVersions.includes(v.id)?' active':'')+'" onclick="toggleCompareVersion(\''+v.id+'\')">'+v.name+(v.tag?' <span class="tag">'+v.tag+'</span>':'')+'</div>';
+    }).join('');
   } else {
-    document.getElementById('verPills').innerHTML = filtered.map(v =>
-      `<div class="ver-pill${v.id === currentVer ? ' active' : ''}" onclick="setVersion('${v.id}')">${v.name}${v.tag ? ' <span class="tag">' + v.tag + '</span>' : ''}</div>`
-    ).join('');
+    document.getElementById('verPills').innerHTML = filtered.map(function(v){
+      return '<div class="ver-pill'+(v.id===currentVer?' active':'')+'" onclick="setVersion(\''+v.id+'\')">'+v.name+(v.tag?' <span class="tag">'+v.tag+'</span>':'')+'</div>';
+    }).join('');
   }
 }
 
 function setProject(type) {
   currentProject = type;
-  const filtered = VERSIONS.filter(v => v.type === type);
-  if (!filtered.find(v => v.id === currentVer)) {
-    const frozen = filtered.find(v => /frozen/i.test(v.tag));
-    currentVer = frozen ? frozen.id : (filtered.length ? filtered[filtered.length - 1].id : '');
+  var filtered = VERSIONS.filter(function(v){return v.type===type});
+  if (!filtered.find(function(v){return v.id===currentVer})) {
+    var frozen = filtered.find(function(v){return /frozen/i.test(v.tag)});
+    currentVer = frozen ? frozen.id : (filtered.length ? filtered[filtered.length-1].id : '');
   }
-  if (filtered.length >= 2) compareVersions = [filtered[filtered.length - 2].id, filtered[filtered.length - 1].id];
+  if (filtered.length >= 2) compareVersions = [filtered[filtered.length-2].id, filtered[filtered.length-1].id];
   else if (filtered.length === 1) compareVersions = [filtered[0].id];
   renderPills(); render();
 }
 
 function setVersion(id) { currentVer = id; renderPills(); render(); }
+
 function setView(v) {
   currentView = v;
-  document.querySelectorAll('.view-tabs .btn').forEach((b, i) => b.classList.toggle('active', ['cards', 'heatmap', 'compare', 'templates'][i] === v));
+  document.querySelectorAll('.view-tabs .btn').forEach(function(b,i){
+    b.classList.toggle('active', ['cards','heatmap','compare','templates'][i]===v);
+  });
   if (v === 'compare') {
-    const filtered = VERSIONS.filter(x => x.type === currentProject);
-    compareVersions = compareVersions.filter(id => filtered.some(x => x.id === id));
-    if (compareVersions.length < 2 && filtered.length >= 2) {
-      compareVersions = [filtered[filtered.length - 2].id, filtered[filtered.length - 1].id];
-    } else if (compareVersions.length < 1 && filtered.length >= 1) {
+    var filtered = VERSIONS.filter(function(x){return x.type===currentProject});
+    compareVersions = compareVersions.filter(function(id){return filtered.some(function(x){return x.id===id})});
+    if (compareVersions.length < 2 && filtered.length >= 2)
+      compareVersions = [filtered[filtered.length-2].id, filtered[filtered.length-1].id];
+    else if (compareVersions.length < 1 && filtered.length >= 1)
       compareVersions = [filtered[0].id];
-    }
   }
-  renderPills();
-  render();
+  renderPills(); render();
 }
 
 function toggleCompareVersion(id) {
-  const idx = compareVersions.indexOf(id);
-  if (idx >= 0) { if (compareVersions.length > 1) compareVersions.splice(idx, 1); }
+  var idx = compareVersions.indexOf(id);
+  if (idx >= 0) { if (compareVersions.length > 1) compareVersions.splice(idx,1); }
   else { if (compareVersions.length >= 4) compareVersions.shift(); compareVersions.push(id); }
-  renderPills();
-  render();
+  renderPills(); render();
 }
 
 function render() {
-  const d = DATA[currentVer] || {};
-  let langs = Object.keys(d);
-  const q = searchTerm.toLowerCase();
-  if (q) langs = langs.filter(l => (l + ' ' + langName(l)).toLowerCase().includes(q));
-  const totalMods = getAllModsForVersion(currentVer).size;
-  const avgMap = {};
-  langs.forEach(l => avgMap[l] = getAvg(d[l], totalMods));
-  if (sortMode === 'pct-desc') langs.sort((a, b) => avgMap[b] - avgMap[a]);
-  else if (sortMode === 'pct-asc') langs.sort((a, b) => avgMap[a] - avgMap[b]);
+  updateStickyOffsets();
+  var d = DATA[currentVer] || {};
+  var langs = Object.keys(d);
+  var q = searchTerm.toLowerCase();
+  if (q) langs = langs.filter(function(l){return (l+' '+langName(l)).toLowerCase().includes(q)});
+  var totalMods = getAllModsForVersion(currentVer).size;
+  var avgMap = {};
+  langs.forEach(function(l){ avgMap[l] = getAvg(d[l], totalMods); });
+  if (sortMode === 'pct-desc') langs.sort(function(a,b){return avgMap[b]-avgMap[a]});
+  else if (sortMode === 'pct-asc') langs.sort(function(a,b){return avgMap[a]-avgMap[b]});
   else langs.sort();
 
-  const allLangs = Object.keys(d);
-  const fullyTranslated = allLangs.filter(l => getAvg(d[l]) === 100).length;
+  var allLangs = Object.keys(d);
+  var fullyTranslated = allLangs.filter(function(l){return getAvg(d[l])===100}).length;
   document.getElementById('stats').innerHTML =
-    `<span class="stat-chip"><b>${allLangs.length}</b> <span>languages</span></span>` +
-    `<span class="stat-chip"><b>${fullyTranslated}</b> <span>fully translated</span></span>`;
+    '<span class="stat-chip"><b>'+allLangs.length+'</b> <span>languages</span></span>' +
+    '<span class="stat-chip"><b>'+fullyTranslated+'</b> <span>fully translated</span></span>';
 
-  document.getElementById('grid').style.display = currentView === 'cards' ? '' : 'none';
-  document.getElementById('heatmapView').className = 'heatmap-container' + (currentView === 'heatmap' ? ' show' : '');
-  document.getElementById('compareView').className = 'compare-container' + (currentView === 'compare' ? ' show' : '');
-  document.getElementById('templatesView').className = 'compare-container' + (currentView === 'templates' ? ' show' : '');
+  document.getElementById('grid').style.display = currentView==='cards' ? '' : 'none';
+  document.getElementById('heatmapView').className = 'heatmap-container'+(currentView==='heatmap'?' show':'');
+  document.getElementById('compareView').className = 'compare-container'+(currentView==='compare'?' show':'');
+  document.getElementById('templatesView').className = 'compare-container'+(currentView==='templates'?' show':'');
 
-  if (currentView === 'cards') renderCards(langs, d);
-  else if (currentView === 'heatmap') renderHeatmap(langs, d);
-  else if (currentView === 'compare') renderCompare(langs);
-  else if (currentView === 'templates') renderTemplates();
+  if (currentView==='cards') renderCards(langs, d);
+  else if (currentView==='heatmap') renderHeatmap(langs, d);
+  else if (currentView==='compare') renderCompare(langs);
+  else if (currentView==='templates') renderTemplates();
 }
 
 function renderCards(langs, d) {
-  const grid = document.getElementById('grid');
-  const userLang = detectLang();
-  const totalMods = getAllModsForVersion(currentVer).size;
-  grid.innerHTML = langs.map(lang => {
-    const mods = d[lang], avg = getAvg(mods, totalMods), isUser = lang === userLang;
-    const sortedEntries = Object.entries(mods).sort(([a],[b]) => a === 'qt' ? -1 : b === 'qt' ? 1 : a.localeCompare(b));
-    const modsHtml = sortedEntries.map(([mod, val]) => {
-      const na = val < 0;
-      const col = na ? '' : 'background:' + pctBg(val) + ';color:' + pctColor(val);
-      if (na) return `<span class="mod na">${mod} n/a</span>`;
-      return `<a class="mod" style="${col}" href="${getTsUrl(currentVer, lang, mod)}" title="Download ${mod}_${lang}.ts (${val}%)" target="_blank">${mod} ${val}%</a>`;
+  var grid = document.getElementById('grid');
+  var userLang = detectLang();
+  var totalMods = getAllModsForVersion(currentVer).size;
+  grid.innerHTML = langs.map(function(lang){
+    var mods = d[lang], avg = getAvg(mods, totalMods), isUser = lang === userLang;
+    var sorted = Object.entries(mods).sort(function(a,b){return a[0]==='qt'?-1:b[0]==='qt'?1:a[0].localeCompare(b[0])});
+    var modsHtml = sorted.map(function(e){
+      var mod=e[0], val=e[1], na = val<0;
+      if (na) return '<span class="mod na">'+mod+' n/a</span>';
+      return '<a class="mod" style="background:'+pctBg(val)+';color:'+pctColor(val)+'" href="'+getTsUrl(currentVer,lang,mod)+'" title="Download '+mod+'_'+lang+'.ts ('+val+'%)" target="_blank">'+mod+' '+val+'%</a>';
     }).join('');
-    const dlAll = Object.keys(mods).length > 1
-      ? `<a href="${BASE + (VERSIONS.find(x=>x.id===currentVer)||{}).base}" target="_blank" style="font-size:11px;color:var(--text2);text-decoration:none;margin-left:8px;margin-right:8px" title="Browse all ${lang} catalogs for this version">Browse all ↗</a>`
+    var v = VERSIONS.find(function(x){return x.id===currentVer}) || {};
+    var dlAll = Object.keys(mods).length > 1
+      ? '<a href="'+BASE+v.base+'" target="_blank" style="font-size:11px;color:var(--text2);text-decoration:none;margin-left:8px" title="Browse all '+lang+' catalogs">Browse all \u2197</a>'
       : '';
-    return `<div class="card${isUser ? ' highlight' : ''}" id="lang-${lang}">
-<div class="card-head"><div><span class="lang-code">${lang}</span><span class="lang-name">${langName(lang)}</span></div>${dlAll}<span class="avg-badge" style="background:${pctBg(avg)};color:${pctColor(avg)}">${avg}%</span></div>
-<div class="bar-wrap"><div class="bar-fill" style="width:${avg}%;background:${pctColor(avg)}"></div></div>
-<div class="modules">${modsHtml}</div></div>`;
+    return '<div class="card'+(isUser?' highlight':'')+'" id="lang-'+lang+'">' +
+      '<div class="card-head"><div>'+flagImg(lang)+'<span class="lang-code">'+lang+'</span><span class="lang-name">'+langName(lang)+'</span></div>'+dlAll+'<span class="avg-badge" style="background:'+pctBg(avg)+';color:'+pctColor(avg)+'">'+avg+'%</span></div>' +
+      '<div class="bar-wrap"><div class="bar-fill" style="width:'+avg+'%;background:'+pctColor(avg)+'"></div></div>' +
+      '<div class="modules">'+modsHtml+'</div></div>';
   }).join('');
 }
 
 function renderHeatmap(langs, d) {
-  const c = document.getElementById('heatmapView');
-  const allMods = new Set();
-  Object.values(d).forEach(m => Object.keys(m).forEach(k => allMods.add(k)));
-  const mods = [...allMods].filter(m => m !== 'qt').sort();
-  let html = `<div class="heatmap" style="grid-template-columns:80px repeat(${mods.length},1fr)"><div></div>`;
-  mods.forEach(m => html += `<div class="hm-header">${m}</div>`);
-  langs.forEach(lang => {
-    html += `<div class="hm-label">${lang}</div>`;
-    mods.forEach(mod => {
-      const v = (d[lang] || {})[mod], val = v === undefined ? 0 : v;
-      const displayVal = val < 0 ? 0 : val;
-      const isNA = val !== undefined && val < 0;
-      const bg = isNA ? 'var(--border)' : heatColor(displayVal);
-      const txt = isNA ? 'n/a' : displayVal + '%';
-      const extraStyle = isNA ? 'opacity:.35;filter:grayscale(1);' : '';
-      html += `<div class="hm-cell" style="background:${bg};${extraStyle}" title="${lang} / ${mod}: ${txt}">${isNA ? '' : (displayVal <= 100 ? displayVal : '')}</div>`;
+  var c = document.getElementById('heatmapView');
+  var allMods = new Set();
+  Object.values(d).forEach(function(m){Object.keys(m).forEach(function(k){allMods.add(k)})});
+  var mods = Array.from(allMods).filter(function(m){
+    for (var l in d) { var v = d[l][m]; if (v !== undefined && v >= 0) return true; }
+    return false;
+  }).filter(function(m){return m!=='qt'}).sort();
+  var html = '<div class="heatmap" style="grid-template-columns:100px repeat('+mods.length+',1fr)"><div></div>';
+  mods.forEach(function(m){ html += '<div class="hm-header">'+m+'</div>'; });
+  langs.forEach(function(lang){
+    html += '<div class="hm-label">'+flagImg(lang)+' '+lang+'</div>';
+    mods.forEach(function(mod){
+      var v = (d[lang]||{})[mod], val = v===undefined?0:v;
+      var dv = val<0?0:val, na = v!==undefined && v<0;
+      var bg = na ? 'var(--border)' : heatColor(dv);
+      html += '<div class="hm-cell" style="background:'+bg+(na?';opacity:.35;filter:grayscale(1)':'')+'" title="'+lang+' / '+mod+': '+(na?'n/a':dv+'%')+'">'+(na?'':(dv<=100?dv:''))+'</div>';
     });
   });
   c.innerHTML = html + '</div>';
 }
 
 function renderCompare(langs) {
-  const c = document.getElementById('compareView');
+  var c = document.getElementById('compareView');
   if (compareVersions.length < 2) {
     c.innerHTML = '<div style="padding:24px;color:var(--text2);text-align:center">Select at least 2 versions above to compare.</div>';
     return;
   }
-
-  const selVers = VERSIONS.filter(v => compareVersions.includes(v.id));
-  const allLangs = new Set();
-  selVers.forEach(v => Object.keys(DATA[v.id] || {}).forEach(l => allLangs.add(l)));
-  let sortedLangs = [...allLangs].sort();
-  const q = searchTerm.toLowerCase();
-  if (q) sortedLangs = sortedLangs.filter(l => (l + ' ' + langName(l)).toLowerCase().includes(q));
-
-  const allMods = new Set();
-  selVers.forEach(v => {
-    const vd = DATA[v.id] || {};
-    Object.values(vd).forEach(m => Object.keys(m).forEach(k => allMods.add(k)));
+  var selVers = VERSIONS.filter(function(v){return compareVersions.includes(v.id)});
+  var allLangs = new Set();
+  selVers.forEach(function(v){Object.keys(DATA[v.id]||{}).forEach(function(l){allLangs.add(l)})});
+  var sortedLangs = Array.from(allLangs).sort();
+  var q = searchTerm.toLowerCase();
+  if (q) sortedLangs = sortedLangs.filter(function(l){return (l+' '+langName(l)).toLowerCase().includes(q)});
+  var allMods = new Set();
+  selVers.forEach(function(v){
+    Object.values(DATA[v.id]||{}).forEach(function(m){Object.keys(m).forEach(function(k){allMods.add(k)})});
   });
-  const mods = [...allMods].sort();
+  var mods = Array.from(allMods).filter(function(m){return m!=='qt'}).sort();
 
-  if (sortMode === 'pct-desc' || sortMode === 'pct-asc') {
-    const lastVer = selVers[selVers.length - 1];
-    const vd = DATA[lastVer.id] || {};
-    const tm = getAllModsForVersion(lastVer.id).size;
-    sortedLangs.sort((a, b) => {
-      const aa = vd[a] ? getAvg(vd[a], tm) : -1, bb = vd[b] ? getAvg(vd[b], tm) : -1;
-      return sortMode === 'pct-desc' ? bb - aa : aa - bb;
+  if (sortMode==='pct-desc' || sortMode==='pct-asc') {
+    var lastVer = selVers[selVers.length-1], vd = DATA[lastVer.id]||{}, tm = getAllModsForVersion(lastVer.id).size;
+    sortedLangs.sort(function(a,b){
+      var aa = vd[a]?getAvg(vd[a],tm):-1, bb = vd[b]?getAvg(vd[b],tm):-1;
+      return sortMode==='pct-desc' ? bb-aa : aa-bb;
     });
   }
 
-  let html = `<table class="compare-table"><thead><tr><th class="lang-col">Language / Module</th>`;
-  selVers.forEach(v => html += `<th>${v.name}</th>`);
-  if (selVers.length >= 2) {
-    html += `<th>Δ</th>`;
-  }
-  html += `</tr></thead><tbody>`;
+  var thTop = document.getElementById('mainHeader').offsetHeight + document.getElementById('controlsBar').offsetHeight;
+  var html = '<table class="compare-table"><thead><tr><th class="lang-col" style="text-align:left">Language / Module</th>';
+  selVers.forEach(function(v){ html += '<th>'+v.name+'</th>'; });
+  if (selVers.length >= 2) html += '<th>\u0394</th>';
+  html += '</tr></thead><tbody>';
 
-  sortedLangs.forEach(lang => {
-    const avgs = selVers.map(v => {
-      const d = (DATA[v.id] || {})[lang];
+  sortedLangs.forEach(function(lang){
+    var avgs = selVers.map(function(v){
+      var d = (DATA[v.id]||{})[lang];
       return d ? getAvg(d, getAllModsForVersion(v.id).size) : null;
     });
-    html += `<tr>`;
-    html += `<td class="lang-col" style="font-weight:700;cursor:pointer" onclick="let row=this.parentElement;row.classList.toggle('expanded');let a=row.querySelector('.expand-arrow');a.textContent=row.classList.contains('expanded')?'◂':'▼';let s=row.nextElementSibling;while(s&&s.dataset.parent==='${lang}'){s.style.display=s.style.display==='none'?'':'none';s=s.nextElementSibling}">${lang} <small style="color:var(--text2)">${langName(lang)}</small> <span class="expand-arrow" style="font-size:10px;color:var(--text2)">▼</span></td>`;
-    avgs.forEach(avg => {
-      html += `<td style="color:${avg !== null ? pctColor(avg) : 'var(--text2)'};font-weight:600">${avg !== null ? avg + '%' : '-'}</td>`;
+    html += '<tr class="lang-row">';
+    html += '<td style="text-align:left;cursor:pointer" onclick="toggleCompareExpand(this)">'+flagImg(lang)+' '+lang+' <small style="color:var(--text2)">'+langName(lang)+'</small> <span class="expand-arrow" style="font-size:10px;color:var(--text2)">\u25BC</span></td>';
+    avgs.forEach(function(avg){
+      html += '<td style="color:'+(avg!==null?pctColor(avg):'var(--text2)')+';font-weight:600">'+(avg!==null?avg+'%':'-')+'</td>';
     });
     if (selVers.length >= 2) {
-      const a = avgs[0], b = avgs[avgs.length - 1];
-      if (a !== null && b !== null) { const delta = b - a; html += `<td class="${delta > 0 ? 'up' : delta < 0 ? 'down' : 'same'}">${delta > 0 ? '+' : ''}${delta}</td>`; }
-      else html += `<td>-</td>`;
+      var a=avgs[0], b=avgs[avgs.length-1];
+      if (a!==null && b!==null) {
+        var delta = b-a;
+        html += '<td class="'+(delta>0?'up':delta<0?'down':'same')+'">'+(delta>0?'+':'')+delta+'</td>';
+      } else html += '<td>-</td>';
     }
-    html += `</tr>`;
+    html += '</tr>';
 
-    mods.forEach(mod => {
-      const vals = selVers.map(v => {
-        const d = (DATA[v.id] || {})[lang];
+    mods.forEach(function(mod){
+      var vals = selVers.map(function(v){
+        var d = (DATA[v.id]||{})[lang];
         if (!d) return null;
-        const val = d[mod];
-        return val === undefined ? null : val < 0 ? 0 : val;
+        var val = d[mod];
+        return val===undefined ? null : val<0 ? 0 : val;
       });
-      if (vals.every(v => v === null)) return;
-      html += `<tr data-parent="${lang}" style="display:none"><td class="mod-col">↳ ${mod}</td>`;
-      vals.forEach(val => {
-        html += `<td style="color:${val !== null ? pctColor(val) : 'var(--text2)'};font-size:12px">${val !== null ? val + '%' : '-'}</td>`;
+      if (vals.every(function(v){return v===null})) return;
+      html += '<tr class="mod-row" data-parent="'+lang+'" style="display:none"><td style="text-align:left;padding-left:28px;color:var(--text2);font-size:12px">\u21b3 '+mod+'</td>';
+      vals.forEach(function(val){
+        html += '<td style="color:'+(val!==null?pctColor(val):'var(--text2)')+';font-size:12px">'+(val!==null?val+'%':'-')+'</td>';
       });
       if (selVers.length >= 2) {
-        const a = vals[0], b = vals[vals.length - 1];
-        if (a !== null && b !== null) { const delta = b - a; html += `<td class="${delta > 0 ? 'up' : delta < 0 ? 'down' : 'same'}" style="font-size:12px">${delta > 0 ? '+' : ''}${delta}</td>`; }
-        else html += `<td>-</td>`;
+        var a2=vals[0], b2=vals[vals.length-1];
+        if (a2!==null && b2!==null) {
+          var d2=b2-a2;
+          html += '<td class="'+(d2>0?'up':d2<0?'down':'same')+'" style="font-size:12px">'+(d2>0?'+':'')+d2+'</td>';
+        } else html += '<td>-</td>';
       }
-      html += `</tr>`;
+      html += '</tr>';
     });
   });
-  c.innerHTML = html + `</tbody></table>`;
+  c.innerHTML = html + '</tbody></table>';
+}
+
+function toggleCompareExpand(td) {
+  var row = td.parentElement;
+  var expanded = row.classList.toggle('expanded');
+  var arrow = td.querySelector('.expand-arrow');
+  arrow.textContent = expanded ? '\u25C2' : '\u25BC';
+  var lang = td.textContent.match(/[a-z]{2}(?:_[A-Z]{2})?/)[0];
+  var s = row.nextElementSibling;
+  while (s && s.dataset.parent === lang) {
+    s.style.display = expanded ? '' : 'none';
+    s = s.nextElementSibling;
+  }
 }
 
 function renderTemplates() {
-  const c = document.getElementById('templatesView');
-  const d = DATA[currentVer] || {};
-  const allMods = new Set();
-  Object.values(d).forEach(m => Object.keys(m).forEach(k => allMods.add(k)));
-  const mods = [...allMods].sort();
-  const v = VERSIONS.find(x => x.id === currentVer);
-  const vname = v ? v.name : currentVer;
-  let html = `<h3 style="margin-bottom:12px;color:var(--text)">Templates for ${vname}</h3>`;
-  html += `<p style="font-size:13px;color:var(--text2);margin-bottom:16px">Untranslated template files (.ts) for each module. Use these as a starting point for a new translation.</p>`;
-  const hasMeta = mods.some(m => /^qt$/i.test(m));
+  var c = document.getElementById('templatesView');
+  var d = DATA[currentVer] || {};
+  var allMods = new Set();
+  Object.values(d).forEach(function(m){Object.keys(m).forEach(function(k){allMods.add(k)})});
+  var mods = Array.from(allMods).sort();
+  var v = VERSIONS.find(function(x){return x.id===currentVer});
+  var vname = v ? v.name : currentVer;
+  var html = '<h3 style="margin-bottom:12px;color:var(--text)">Templates for '+vname+'</h3>';
+  html += '<p style="font-size:13px;color:var(--text2);margin-bottom:16px">Untranslated template files (.ts) for each module.</p>';
+  var hasMeta = mods.some(function(m){return m==='qt'});
   if (hasMeta) {
-    const metaUrl = getTemplateUrl(currentVer, 'qt');
-    html += `<div style="margin-bottom:12px"><a href="${metaUrl}" target="_blank" class="btn" style="text-decoration:none;font-size:13px;font-weight:600">⬇ qt_untranslated.ts (meta catalog)</a></div>`;
+    html += '<div style="margin-bottom:12px"><a href="'+getTemplateUrl(currentVer,'qt')+'" target="_blank" class="btn" style="text-decoration:none;font-size:13px;font-weight:600">\u2B07 qt_untranslated.ts (meta catalog)</a></div>';
   }
-  html += `<div style="display:flex;flex-wrap:wrap;gap:8px">`;
-  mods.filter(m => !/^qt$/i.test(m)).forEach(mod => {
-    const url = getTemplateUrl(currentVer, mod);
-    html += `<a href="${url}" target="_blank" class="btn" style="text-decoration:none;font-size:13px">⬇ ${mod}_untranslated.ts</a>`;
+  html += '<div style="display:flex;flex-wrap:wrap;gap:8px">';
+  mods.filter(function(m){return m!=='qt'}).forEach(function(mod){
+    html += '<a href="'+getTemplateUrl(currentVer,mod)+'" target="_blank" class="btn" style="text-decoration:none;font-size:13px">\u2B07 '+mod+'_untranslated.ts</a>';
   });
-  html += `</div>`;
+  html += '</div>';
   c.innerHTML = html;
 }
 
 function detectLang() {
-  const saved = localStorage.getItem('qt-dash-yourLang');
+  var saved = localStorage.getItem('qt-dash-yourLang');
   if (saved) return saved;
-  const code = (navigator.language || '').replace('-', '_');
-  for (const v of Object.values(DATA)) { if (v[code]) return code; }
-  const base = code.split('_')[0];
-  for (const v of Object.values(DATA)) { if (v[base]) return base; }
+  var code = (navigator.language||'').replace('-','_');
+  for (var k in DATA) { if (DATA[k][code]) return code; }
+  var base = code.split('_')[0];
+  for (var k2 in DATA) { if (DATA[k2][base]) return base; }
   return '';
 }
 
 function getAllLangs() {
-  const s = new Set();
-  Object.values(DATA).forEach(v => Object.keys(v).forEach(l => s.add(l)));
-  return [...s].sort();
+  var s = new Set();
+  Object.values(DATA).forEach(function(v){Object.keys(v).forEach(function(l){s.add(l)})});
+  return Array.from(s).sort();
 }
 
 function jumpToSelectedLang() {
-  const sel = document.getElementById('yourLangSelect');
+  var sel = document.getElementById('yourLangSelect');
   if (sel && sel.value) jumpToLang(sel.value);
 }
 
 function initYourLangDropdown() {
-  const container = document.getElementById('yourLang');
-  const langs = getAllLangs();
-  const current = detectLang();
-  let html = '<select id="yourLangSelect" style="padding:6px 10px;border-radius:6px;font-size:13px;background:var(--input-bg);color:var(--text);border:1.5px solid var(--border);cursor:pointer">';
-  html += '<option value="">Select language…</option>';
-  langs.forEach(l => {
-    const name = langName(l);
-    html += `<option value="${l}"${l === current ? ' selected' : ''}>${l}${name ? ' – ' + name : ''}</option>`;
+  var container = document.getElementById('yourLang');
+  var langs = getAllLangs(), current = detectLang();
+  var html = '<select id="yourLangSelect" style="padding:6px 10px;border-radius:6px;font-size:13px;background:var(--input-bg);color:var(--text);border:1.5px solid var(--border);cursor:pointer">';
+  html += '<option value="">Select language\u2026</option>';
+  langs.forEach(function(l){
+    html += '<option value="'+l+'"'+(l===current?' selected':'')+'>'+l+(langName(l)?' \u2013 '+langName(l):'')+'</option>';
   });
-  html += '</select>';
-  container.innerHTML = html;
-  document.getElementById('yourLangSelect').addEventListener('change', e => {
-    const val = e.target.value;
-    if (val) { localStorage.setItem('qt-dash-yourLang', val); jumpToLang(val); }
+  container.innerHTML = html + '</select>';
+  document.getElementById('yourLangSelect').addEventListener('change', function(e){
+    if (e.target.value) { localStorage.setItem('qt-dash-yourLang', e.target.value); jumpToLang(e.target.value); }
     else { localStorage.removeItem('qt-dash-yourLang'); render(); }
   });
 }
 
 function initUI() {
   renderPills(); render(); initYourLangDropdown();
+  window.addEventListener('resize', updateStickyOffsets);
 }
 
 function jumpToLang(code) {
   searchTerm = ''; document.getElementById('search').value = '';
   currentView = 'cards';
-  document.querySelectorAll('.view-tabs .btn').forEach((b, i) => b.classList.toggle('active', i === 0));
+  document.querySelectorAll('.view-tabs .btn').forEach(function(b,i){b.classList.toggle('active',i===0)});
   render();
-  setTimeout(() => { const el = document.getElementById('lang-' + code); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 100);
+  setTimeout(function(){
+    var el = document.getElementById('lang-'+code);
+    if (el) el.scrollIntoView({behavior:'smooth',block:'center'});
+  }, 100);
 }
 
-document.getElementById('search').addEventListener('input', e => { searchTerm = e.target.value; render(); });
-document.getElementById('sortBy').addEventListener('change', e => { sortMode = e.target.value; localStorage.setItem('qt-dash-sortMode', sortMode); render(); });
-(function() { const saved = localStorage.getItem('qt-dash-sortMode'); if (saved) { sortMode = saved; document.getElementById('sortBy').value = saved; } })();
+document.getElementById('search').addEventListener('input', function(e){ searchTerm = e.target.value; render(); });
+document.getElementById('sortBy').addEventListener('change', function(e){ sortMode = e.target.value; localStorage.setItem('qt-dash-sortMode', sortMode); render(); });
+(function(){
+  var saved = localStorage.getItem('qt-dash-sortMode');
+  if (saved) { sortMode = saved; document.getElementById('sortBy').value = saved; }
+})();
 
 loadData();
 </script>
