@@ -56,13 +56,11 @@ a:hover{text-decoration:underline}
 .ver-pill{padding:4px 14px;border-radius:20px;font-size:13px;cursor:pointer;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.1);color:rgba(255,255,255,.85);transition:.2s}
 .ver-pill:hover{background:rgba(255,255,255,.2)}
 .ver-pill.active{background:#2CDE85;color:#00414A;border-color:#2CDE85;font-weight:600;outline:none;box-shadow:none}
-/* Project pills: larger and bolder to establish hierarchy */
 .ver-pill.project-pill{padding:5px 18px;font-size:14px;font-weight:600;border-width:2px}
 .ver-pill.project-pill.active{background:#2CDE85;color:#00414A;border-color:#2CDE85;font-weight:700}
-.ver-pill .pct{margin-left:4px;opacity:.7;font-size:11px}
 .ver-pill .tag{margin-left:4px;opacity:.6;font-size:10px;font-style:italic}
 
-.controls-bar{background:var(--control-bg);border-bottom:2px solid var(--border);padding:10px 24px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.controls-bar{background:var(--control-bg);border-bottom:2px solid var(--border);padding:10px 24px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;position:sticky;top:0;z-index:99}
 input[type=text],select{background:var(--input-bg);color:var(--text);border:1.5px solid var(--border);border-radius:6px;padding:7px 12px;font-size:14px;transition:border-color .2s}
 input[type=text]:focus,select:focus{outline:none;border-color:var(--qt-pine);box-shadow:0 0 0 3px rgba(0,65,74,.1)}
 [data-theme="dark"] input[type=text]:focus,[data-theme="dark"] select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(65,205,82,.15)}
@@ -85,7 +83,6 @@ select{cursor:pointer}
 
 .view-tabs{display:flex;gap:4px}
 
-/* Compare version picker */
 .compare-ver-picker{display:none;gap:6px;align-items:center;flex-wrap:wrap;padding:10px 24px;background:var(--control-bg);border-bottom:1px solid var(--border)}
 .compare-ver-picker.show{display:flex}
 .compare-ver-picker label{font-size:13px;font-weight:600;color:var(--text);margin-right:4px}
@@ -112,14 +109,12 @@ select{cursor:pointer}
 [data-theme="dark"] .mod:hover{border-color:var(--accent)}
 .mod.na{opacity:.35;cursor:default}
 .mod.na:hover{border-color:transparent;transform:none}
-/* (template hover buttons removed — now in Templates tab) */
-
 .heatmap-container{padding:20px 24px;display:none}
 .heatmap-container.show{display:block}
 .heatmap{display:grid;gap:2px;font-size:11px}
 .hm-cell{width:100%;aspect-ratio:1;border-radius:3px;display:flex;align-items:center;justify-content:center;font-weight:600;cursor:default;min-height:20px}
 .hm-label{font-size:11px;color:var(--text2);text-align:center;padding-right:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;justify-content:center}
-.hm-header{font-size:10px;color:var(--text2);text-align:center;writing-mode:vertical-lr;transform:rotate(180deg);height:60px;overflow:hidden}
+.hm-header{font-size:10px;color:var(--text2);writing-mode:vertical-lr;transform:rotate(180deg);height:120px;overflow:hidden;display:flex;align-items:center;justify-content:flex-start}
 
 .compare-container{padding:20px 24px;display:none}
 .compare-container.show{display:block}
@@ -199,7 +194,6 @@ input[type=text]{width:100%}
 <div class="compare-container" id="templatesView"></div>
 
 <script>
-// ── Theme ──
 function initTheme(){
   const saved = localStorage.getItem('qt-dash-theme');
   const theme = saved || 'light';
@@ -212,6 +206,7 @@ function toggleTheme(){
   document.documentElement.setAttribute('data-theme', next);
   localStorage.setItem('qt-dash-theme', next);
   updateThemeBtn(next);
+  render();
 }
 function updateThemeBtn(theme){
   const btn = document.getElementById('themeToggle');
@@ -251,15 +246,13 @@ let currentVer = '';
 let currentView = 'cards';
 let searchTerm = '';
 let sortMode = 'code';
-let compareVersions = []; // selected versions for compare mode
-let currentProject = 'qt'; // 'qt', 'creator', 'ifw'
+let compareVersions = [];
+let currentProject = 'qt';
 
 function parseL10nPage(html) {
   const versions = [];
   const data = {};
 
-  // Extract directory names from href attributes before stripping HTML
-  // Map: directory -> set of hrefs for that directory
   const hrefDirs = new Set();
   const hrefRegex = /href="([^"]+\.ts)"/g;
   let hm;
@@ -286,14 +279,10 @@ function parseL10nPage(html) {
     sections.push({ title: matches[i].title, body: text.substring(start, end) });
   }
 
-  // Helper: find the actual directory from hrefs that contains files for this section
   function findBaseDir(sectionBody, type) {
-    // Extract a sample href from the raw HTML for this section
-    // We match by looking for file patterns in the section body
     const langMatch = sectionBody.match(/\b([a-z]{2}(?:_[A-Z]{2})?)\s*[\(:]/);
     if (!langMatch) return null;
     const sampleLang = langMatch[1];
-    // Search in the original HTML for href containing this language file
     for (const dir of hrefDirs) {
       if (type === 'creator' && dir.startsWith('creator')) {
         const re = new RegExp('href="' + dir + '/qtcreator_' + sampleLang + '\\.ts"');
@@ -434,7 +423,6 @@ async function loadData() {
   const qtVersions = VERSIONS.filter(v => v.type === 'qt');
   const frozen = qtVersions.find(v => /frozen/i.test(v.tag));
   currentVer = frozen ? frozen.id : (qtVersions.length ? qtVersions[qtVersions.length - 1].id : VERSIONS[0]?.id || '');
-  // Initialize compare versions to last 2 Qt versions
   if (qtVersions.length >= 2) compareVersions = [qtVersions[qtVersions.length - 2].id, qtVersions[qtVersions.length - 1].id];
   else if (qtVersions.length === 1) compareVersions = [qtVersions[0].id];
   initUI();
@@ -464,11 +452,9 @@ function getAvg(mods, totalModCount) {
   const v = Object.values(mods).filter(x => x >= 0);
   if (!v.length) return 0;
   const sum = v.reduce((a, b) => a + b, 0);
-  // If totalModCount provided, divide by total modules (treating missing as 0%)
   const divisor = totalModCount && totalModCount > v.length ? totalModCount : v.length;
   return Math.round(sum / divisor);
 }
-// Get all modules that exist for a version across all languages
 function getAllModsForVersion(vid) {
   const d = DATA[vid]; if (!d) return new Set();
   const mods = new Set();
@@ -546,24 +532,22 @@ function getProjectTypes() {
 function projectLabel(t) { return t === 'qt' ? 'Qt' : t === 'creator' ? 'Qt Creator' : 'IFW'; }
 
 function renderPills() {
-  // Project pills
   const projects = getProjectTypes();
   document.getElementById('projectPills').innerHTML = projects.map(t =>
     `<div class="ver-pill project-pill${t === currentProject ? ' active' : ''}" onclick="setProject('${t}')">${projectLabel(t)}</div>`
   ).join('');
 
-  // Version pills filtered by project
   const filtered = VERSIONS.filter(v => v.type === currentProject);
   const isCompare = currentView === 'compare';
   document.getElementById('verModeLabel').textContent = isCompare ? 'Select 2–4:' : '';
 
   if (isCompare) {
     document.getElementById('verPills').innerHTML = filtered.map(v =>
-      `<div class="ver-pill${compareVersions.includes(v.id) ? ' active' : ''}" onclick="toggleCompareVersion('${v.id}')">${v.name}${v.tag ? ' <span class="tag">' + v.tag + '</span>' : ''} <span class="pct">${versionAvg(v.id)}%</span></div>`
+      `<div class="ver-pill${compareVersions.includes(v.id) ? ' active' : ''}" onclick="toggleCompareVersion('${v.id}')">${v.name}${v.tag ? ' <span class="tag">' + v.tag + '</span>' : ''}</div>`
     ).join('');
   } else {
     document.getElementById('verPills').innerHTML = filtered.map(v =>
-      `<div class="ver-pill${v.id === currentVer ? ' active' : ''}" onclick="setVersion('${v.id}')">${v.name}${v.tag ? ' <span class="tag">' + v.tag + '</span>' : ''} <span class="pct">${versionAvg(v.id)}%</span></div>`
+      `<div class="ver-pill${v.id === currentVer ? ' active' : ''}" onclick="setVersion('${v.id}')">${v.name}${v.tag ? ' <span class="tag">' + v.tag + '</span>' : ''}</div>`
     ).join('');
   }
 }
@@ -571,12 +555,10 @@ function renderPills() {
 function setProject(type) {
   currentProject = type;
   const filtered = VERSIONS.filter(v => v.type === type);
-  // Reset current version to best match in new project
   if (!filtered.find(v => v.id === currentVer)) {
     const frozen = filtered.find(v => /frozen/i.test(v.tag));
     currentVer = frozen ? frozen.id : (filtered.length ? filtered[filtered.length - 1].id : '');
   }
-  // Reset compare versions to last 2 in this project
   if (filtered.length >= 2) compareVersions = [filtered[filtered.length - 2].id, filtered[filtered.length - 1].id];
   else if (filtered.length === 1) compareVersions = [filtered[0].id];
   renderPills(); render();
@@ -586,6 +568,15 @@ function setVersion(id) { currentVer = id; renderPills(); render(); }
 function setView(v) {
   currentView = v;
   document.querySelectorAll('.view-tabs .btn').forEach((b, i) => b.classList.toggle('active', ['cards', 'heatmap', 'compare', 'templates'][i] === v));
+  if (v === 'compare') {
+    const filtered = VERSIONS.filter(x => x.type === currentProject);
+    compareVersions = compareVersions.filter(id => filtered.some(x => x.id === id));
+    if (compareVersions.length < 2 && filtered.length >= 2) {
+      compareVersions = [filtered[filtered.length - 2].id, filtered[filtered.length - 1].id];
+    } else if (compareVersions.length < 1 && filtered.length >= 1) {
+      compareVersions = [filtered[0].id];
+    }
+  }
   renderPills();
   render();
 }
@@ -633,7 +624,8 @@ function renderCards(langs, d) {
   const totalMods = getAllModsForVersion(currentVer).size;
   grid.innerHTML = langs.map(lang => {
     const mods = d[lang], avg = getAvg(mods, totalMods), isUser = lang === userLang;
-    const modsHtml = Object.entries(mods).map(([mod, val]) => {
+    const sortedEntries = Object.entries(mods).sort(([a],[b]) => a === 'qt' ? -1 : b === 'qt' ? 1 : a.localeCompare(b));
+    const modsHtml = sortedEntries.map(([mod, val]) => {
       const na = val < 0;
       const col = na ? '' : 'background:' + pctBg(val) + ';color:' + pctColor(val);
       if (na) return `<span class="mod na">${mod} n/a</span>`;
@@ -653,7 +645,7 @@ function renderHeatmap(langs, d) {
   const c = document.getElementById('heatmapView');
   const allMods = new Set();
   Object.values(d).forEach(m => Object.keys(m).forEach(k => allMods.add(k)));
-  const mods = [...allMods].sort();
+  const mods = [...allMods].filter(m => m !== 'qt').sort();
   let html = `<div class="heatmap" style="grid-template-columns:80px repeat(${mods.length},1fr)"><div></div>`;
   mods.forEach(m => html += `<div class="hm-header">${m}</div>`);
   langs.forEach(lang => {
@@ -679,14 +671,12 @@ function renderCompare(langs) {
   }
 
   const selVers = VERSIONS.filter(v => compareVersions.includes(v.id));
-  // Collect all languages across selected versions
   const allLangs = new Set();
   selVers.forEach(v => Object.keys(DATA[v.id] || {}).forEach(l => allLangs.add(l)));
   let sortedLangs = [...allLangs].sort();
   const q = searchTerm.toLowerCase();
   if (q) sortedLangs = sortedLangs.filter(l => (l + ' ' + langName(l)).toLowerCase().includes(q));
 
-  // Collect all modules across selected versions
   const allMods = new Set();
   selVers.forEach(v => {
     const vd = DATA[v.id] || {};
@@ -694,7 +684,6 @@ function renderCompare(langs) {
   });
   const mods = [...allMods].sort();
 
-  // Sort languages
   if (sortMode === 'pct-desc' || sortMode === 'pct-asc') {
     const lastVer = selVers[selVers.length - 1];
     const vd = DATA[lastVer.id] || {};
@@ -713,13 +702,12 @@ function renderCompare(langs) {
   html += `</tr></thead><tbody>`;
 
   sortedLangs.forEach(lang => {
-    // Language summary row
     const avgs = selVers.map(v => {
       const d = (DATA[v.id] || {})[lang];
       return d ? getAvg(d, getAllModsForVersion(v.id).size) : null;
     });
-    html += `<tr style="cursor:pointer" onclick="this.classList.toggle('expanded');let a=this.querySelector('.expand-arrow');a.textContent=this.classList.contains('expanded')?'▼':'▸';let s=this.nextElementSibling;while(s&&s.dataset.parent==='${lang}'){s.style.display=s.style.display==='none'?'':'none';s=s.nextElementSibling}">`;
-    html += `<td class="lang-col" style="font-weight:700">${lang} <small style="color:var(--text2)">${langName(lang)}</small> <span class="expand-arrow" style="font-size:10px;color:var(--text2)">▸</span></td>`;
+    html += `<tr>`;
+    html += `<td class="lang-col" style="font-weight:700;cursor:pointer" onclick="let row=this.parentElement;row.classList.toggle('expanded');let a=row.querySelector('.expand-arrow');a.textContent=row.classList.contains('expanded')?'◂':'▼';let s=row.nextElementSibling;while(s&&s.dataset.parent==='${lang}'){s.style.display=s.style.display==='none'?'':'none';s=s.nextElementSibling}">${lang} <small style="color:var(--text2)">${langName(lang)}</small> <span class="expand-arrow" style="font-size:10px;color:var(--text2)">▼</span></td>`;
     avgs.forEach(avg => {
       html += `<td style="color:${avg !== null ? pctColor(avg) : 'var(--text2)'};font-weight:600">${avg !== null ? avg + '%' : '-'}</td>`;
     });
@@ -730,7 +718,6 @@ function renderCompare(langs) {
     }
     html += `</tr>`;
 
-    // Per-module rows (hidden by default)
     mods.forEach(mod => {
       const vals = selVers.map(v => {
         const d = (DATA[v.id] || {})[lang];
@@ -738,7 +725,6 @@ function renderCompare(langs) {
         const val = d[mod];
         return val === undefined ? null : val < 0 ? 0 : val;
       });
-      // Only show module row if it exists in at least one selected version
       if (vals.every(v => v === null)) return;
       html += `<tr data-parent="${lang}" style="display:none"><td class="mod-col">↳ ${mod}</td>`;
       vals.forEach(val => {
@@ -765,7 +751,6 @@ function renderTemplates() {
   const vname = v ? v.name : currentVer;
   let html = `<h3 style="margin-bottom:12px;color:var(--text)">Templates for ${vname}</h3>`;
   html += `<p style="font-size:13px;color:var(--text2);margin-bottom:16px">Untranslated template files (.ts) for each module. Use these as a starting point for a new translation.</p>`;
-  // Meta catalog (qt_untranslated.ts) if qt meta module exists
   const hasMeta = mods.some(m => /^qt$/i.test(m));
   if (hasMeta) {
     const metaUrl = getTemplateUrl(currentVer, 'qt');
@@ -834,7 +819,6 @@ function jumpToLang(code) {
 
 document.getElementById('search').addEventListener('input', e => { searchTerm = e.target.value; render(); });
 document.getElementById('sortBy').addEventListener('change', e => { sortMode = e.target.value; localStorage.setItem('qt-dash-sortMode', sortMode); render(); });
-// Restore saved sort mode
 (function() { const saved = localStorage.getItem('qt-dash-sortMode'); if (saved) { sortMode = saved; document.getElementById('sortBy').value = saved; } })();
 
 loadData();
